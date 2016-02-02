@@ -1,0 +1,9 @@
+# IDE folder
+.idea/
+
+# Local configuration files
+.env
+config.local.cfg
+
+# Python bytecode files
+*.pyc

@@ -1,0 +1,53 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Inventory Manager{% endblock %}
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='bootstrap-material-design/css/bootstrap-material-design.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='bootstrap-material-design/css/ripples.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock%}
+{% block navbar %}
+<nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Inventory Manager</a>
+        </div>
+        <div class="collapse navbar-collapse pull-right" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="#">Link 1</a></li>
+                <li><a href="#">Link 2</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            {% for message in get_flashed_messages() %}
+                <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+            {% block inner_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='bootstrap-material-design/js/ripples.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap-material-design/js/material.min.js') }}"></script>
+<script>
+    $.material.init()
+</script>
+{% endblock %}
