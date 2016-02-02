@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block inner_content %}
+<big>
+    <ol>
+        {% for user in users %}
+        <li>{{ user.email }}
+            {% endfor %}
+    </ol>
+</big>
+{% endblock %}

@@ -1,6 +1,7 @@
 dominate==2.1.16
 Flask==0.10.1
 Flask-Bootstrap==3.3.5.7
+Flask-Login==0.3.2
 Flask-SQLAlchemy==2.1
 Flask-WTF==0.12
 gunicorn==19.4.5

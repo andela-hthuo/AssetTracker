@@ -18,12 +18,17 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">Inventory Manager</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">Inventory Manager</a>
         </div>
-        <div class="collapse navbar-collapse pull-right" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-                <li><a href="#">Link 1</a></li>
-                <li><a href="#">Link 2</a></li>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="{{ url_for('users') }}">All users</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="#">{{ current_user.email }}</a></li>
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login', next=request.args.get('next')) }}">Login</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
@@ -34,6 +39,11 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8">
+            {% if heading %}
+            <h1 class="page-header">
+                {{ heading }}
+            </h1>
+            {% endif %}
             {% for message in get_flashed_messages() %}
                 <div class="alert alert-info">{{ message }}</div>
             {% endfor %}
