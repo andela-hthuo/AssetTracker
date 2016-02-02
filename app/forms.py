@@ -12,7 +12,7 @@ class LoginForm(Form):
 
 class SignUpForm(Form):
     name = StringField("Name", validators=[validators.DataRequired()])
-    email = StringField("Email", validators=[validators.DataRequired()])
+    email = StringField("Email", validators=[validators.Email()])
     password = PasswordField("Password", validators=[validators.DataRequired()])
     confirm = PasswordField("Confirm password", validators=[validators.DataRequired()])
     submit = SubmitField("Sign Up")
