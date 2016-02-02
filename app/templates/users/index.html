@@ -3,8 +3,15 @@
 <big>
     <ol>
         {% for user in users %}
-        <li>{{ user.email }}
-            {% endfor %}
+            <li>{{ user.name }} -
+                <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                <ul>
+                    {% for role in user.roles %}
+                        <li>{{ role.title }}</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
     </ol>
 </big>
 {% endblock %}

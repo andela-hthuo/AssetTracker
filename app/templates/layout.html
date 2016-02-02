@@ -22,10 +22,15 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="{{ url_for('users') }}">All users</a></li>
                 {% if current_user.is_authenticated %}
-                    <li><a href="#">{{ current_user.email }}</a></li>
-                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    <li><a href="{{ url_for('users') }}">All users</a></li>
+                    <li class="dropdown">
+                        <a href="bootstrap-elements.html" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{ current_user.name }}
+            <b class="caret"></b></a>
+                      <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                      </ul>
+                    </li>
                 {% else %}
                     <li><a href="{{ url_for('login', next=request.args.get('next')) }}">Login</a></li>
                 {% endif %}
@@ -50,9 +55,9 @@
                         <div class="alert alert-{{ category }}">{{ message }}</div>
                     {% endfor %}
                 {% else %}
-            {% for message in get_flashed_messages() %}
-                <div class="alert alert-info">{{ message }}</div>
-            {% endfor %}
+                    {% for message in get_flashed_messages() %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
             {% block inner_content %}{% endblock %}
