@@ -139,3 +139,39 @@ def invite_user():
 
     form.email.data = 'thuohm@gmail.com'
     return render_template('users/invite.html', form=form)
+
+
+@app.route('/users/signup', methods=['GET', 'POST'])
+def signup():
+    form = SignUpForm()
+    invite = Invitation.get(request.args.get('invite'))
+    if invite is None:
+        return render_template(
+            'errors/generic.html',
+            message="Invalid invite"
+        )
+
+    if User.query.filter_by(email=invite.invitee).first() is not None:
+        return render_template(
+            'errors/generic.html',
+            message="Email belongs to an existing user"
+        )
+
+    if form.validate_on_submit():
+        role = invite.role
+        if form.email.data != invite.invitee:
+            return render_template(
+                'errors/generic.html',
+                message="Email doesn't match invite email"
+            )
+
+        user = User(form.email.data, form.password.data, form.name.data)
+        role.users.append(user)
+        db.session.add_all([user, role])
+        db.session.commit()
+        login_user(user)
+        flash("Sign up successful", 'success')
+        return redirect(url_for('index'))
+
+    form.email.data = invite.invitee
+    return render_template('users/signup.html', form=form)
