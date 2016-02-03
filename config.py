@@ -1,2 +1,5 @@
 SECRET_KEY = 'kSec2e+iZlgjjKChKdUY5Iw0kurzjsGX'
 SQLALCHEMY_TRACK_MODIFICATIONS = True
+MAIL_SERVER = 'smtp.gmail.com'
+MAIL_PORT = 587
+MAIL_USE_TLS = True

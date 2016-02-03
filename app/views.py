@@ -1,8 +1,11 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required
-from app import app, login_manager, db
-from forms import LoginForm, SignUpForm
-from models import User, Role
+from flask_login import login_user, logout_user, login_required, current_user
+from flask_mail import Message
+from app import app, login_manager, db, mail
+from forms import LoginForm, SignUpForm, InviteForm
+from models import User, Role, Invitation
+import os
+import base64
 
 
 @login_manager.user_loader
@@ -58,6 +61,7 @@ def setup():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        # the method is POST and the form is valid
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.check_password(form.password.data):
             login_user(user)
@@ -83,7 +87,55 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/users')
+@app.route('/users/')
 @login_required
 def users():
     return render_template('users/index.html', users=User.query.all())
+
+
+@app.route('/users/invite', methods=['GET', 'POST'])
+@login_required
+def invite_user():
+    form = InviteForm()
+    # users can only add users one privilege level below them
+    form.role.choices = [(role.id, role.title) for role in Role.query.all()
+                         if role.level > current_user.roles[0].level]
+    if form.validate_on_submit():
+        # the method is POST and the form is valid
+        token = base64.urlsafe_b64encode(os.urandom(24))
+        invitation = Invitation(
+            token,
+            form.email.data,
+            Role.get_by_id(form.role.data),
+            current_user
+        )
+
+        # invite_link: http://<host>/signup?invite=<token>
+        invite_link = url_for('signup', _external=True, invite=token)
+
+        # prepare and send invitation email
+        msg = Message(
+            "Inventory Manager invitation",
+            sender=current_user.email,
+            recipients=[form.email.data])
+        msg.body = "You've been invited to join Inventory Manager. Follow \
+            this link to sign up: %s" % invite_link
+        msg.html = "You've been invited to join Inventory Manager. Follow \
+            this link to sign up:<br> <a href=\"%s\">%s</a>" % \
+            (invite_link, invite_link)
+        try:
+            mail.send(msg)
+            db.session.add(invitation)
+            db.session.commit()
+            flash("Invitation sent", 'success')
+        except Exception, e:
+            if app.config.get('DEBUG'):
+                raise e
+            else:
+                flash("Failed to send invite due to a %s error" % e.__class__.__name__, 'danger')
+                return render_template('users/invite.html', form=form)
+
+        return redirect(url_for('index'))
+
+    form.email.data = 'thuohm@gmail.com'
+    return render_template('users/invite.html', form=form)

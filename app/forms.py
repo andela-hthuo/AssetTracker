@@ -1,5 +1,5 @@
 from wtforms import StringField, SubmitField, PasswordField,\
-    validators
+    validators, SelectField
 from flask_wtf import Form
 from models import User
 
@@ -25,6 +25,21 @@ class SignUpForm(Form):
 
         if self.confirm.data != self.password.data:
             self.confirm.errors.append("Confirmation doesn't match password")
+            valid = False
+
+        return valid
+
+
+class InviteForm(Form):
+    email = StringField("Email", validators=[validators.Email()])
+    role = SelectField("Role", coerce=int, validators=[validators.DataRequired()])
+
+    submit = SubmitField("Invite")
+
+    def validate(self, **kwargs):
+        valid = Form.validate(self)
+        if User.query.filter_by(email=self.email.data).first() is not None:
+            self.email.errors.append("Email belongs to an existing user")
             valid = False
 
         return valid
