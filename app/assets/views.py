@@ -8,7 +8,9 @@ from forms import AddAssetForm
 
 @assets.route('/')
 def index():
-    return render_template('assets/index.html')
+    return render_template('assets/index.html',
+                           assets=app.models.Asset.query.all(),
+                           heading='All Assets')
 
 
 @assets.route('/add', methods=['GET', 'POST'])

@@ -2,3 +2,7 @@ body {
     background-color: #F8F8F8;
     margin-bottom: 70px
 }
+.panel-asset-body > div{
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+}

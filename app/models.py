@@ -27,7 +27,7 @@ class User(db.Model, UserMixin):
     )
     assets_added = db.relationship(
         'Asset',
-        backref=db.backref('assigned_by', lazy='joined'),
+        backref=db.backref('added_by', lazy='joined'),
         lazy='dynamic',
     )
 
@@ -108,3 +108,7 @@ class Asset(db.Model):
         self.code = code
         self.purchased = purchased
         added_by.assets_added.append(self)
+
+    @property
+    def purchased_date(self):
+        return self.purchased.strftime("%d, %b %Y")

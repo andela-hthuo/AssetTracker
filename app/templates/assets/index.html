@@ -1,4 +1,40 @@
 {% extends "layout.html" %}
 {% block inner_content %}
-    <h1>Assets</h1>
+<p>
+    <a href="{{ url_for('assets.add') }}" class="btn btn-primary btn-raised">Add Asset</a>
+</p>
+{% for asset in assets %}
+<div class="panel panel-default">
+    <div class="panel-body  panel-asset-body">
+        <div class="col-md-12">
+            <div class="col-md-4">Name:</div>
+            <div class="col-md-8"><strong>{{ asset.name }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Type:</div>
+            <div class="col-md-8"><strong>{{ asset.type }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Serial Number:</div>
+            <div class="col-md-8"><strong>{{ asset.serial_no }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Andela Serial Code:</div>
+            <div class="col-md-8"><strong>{{ asset.code }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Description:</div>
+            <div class="col-md-8"><strong>{{ asset.description }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Date of purchase:</div>
+            <div class="col-md-8"><strong>{{ asset.purchased_date }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Added by:</div>
+            <div class="col-md-8"><strong>{{ asset.added_by.name }}</strong></div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
