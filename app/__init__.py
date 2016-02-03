@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
 
+from app.assets import assets
+
 import config
 
 app = Flask(__name__)
@@ -12,17 +14,20 @@ app = Flask(__name__)
 app.config.from_object(config)
 app.config.from_envvar('FLASK_CONFIG_FILE')
 
-# Flask-SQLAlchemy
+# initialize Flask-SQLAlchemy
 db = SQLAlchemy(app)
 
-# Flask-Bootstrap
+# initialize Flask-Bootstrap
 Bootstrap(app)
 
-# Flask-Login
+# initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# Flask-Mail
+# initialize Flask-Mail
 mail = Mail(app)
+
+# Register assets blueprint
+app.register_blueprint(assets, url_prefix='/assets')
 
 import views

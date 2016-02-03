@@ -25,6 +25,11 @@ class User(db.Model, UserMixin):
         backref=db.backref('sender', lazy='joined'),
         lazy='dynamic',
     )
+    assets_added = db.relationship(
+        'Asset',
+        backref=db.backref('assigned_by', lazy='joined'),
+        lazy='dynamic',
+    )
 
     def __init__(self, email, password, name):
         self.email = email
@@ -82,3 +87,24 @@ class Invitation(db.Model):
     @staticmethod
     def get(token):
         return Invitation.query.filter_by(token=token).first()
+
+
+class Asset(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    type = db.Column(db.String(64))
+    description = db.Column(db.Text)
+    serial_no = db.Column(db.String(64))
+    code = db.Column(db.String(64), unique=True)
+    purchased = db.Column(db.DateTime)
+    added_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, name, asset_type, description, serial_no, code, purchased,
+                 added_by):
+        self.name = name
+        self.type = asset_type
+        self.description = description
+        self.serial_no = serial_no
+        self.code = code
+        self.purchased = purchased
+        added_by.assets_added.append(self)
