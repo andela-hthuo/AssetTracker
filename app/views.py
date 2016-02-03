@@ -90,7 +90,7 @@ def index():
 @app.route('/users/')
 @login_required
 def users():
-    return render_template('users/index.html', users=User.query.all())
+    return render_template('users/index.html', roles=Role.query.all())
 
 
 @app.route('/users/invite', methods=['GET', 'POST'])

@@ -1,17 +1,22 @@
 {% extends "layout.html" %}
 {% block inner_content %}
-<big>
-    <ol>
-        {% for user in users %}
-            <li>{{ user.name }} -
+{% for role in roles %}
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ role.title }}s</h3>
+    </div>
+    <div class="panel-body">
+        <big>
+        {% for user in role.users %}
+            <p>
+                {{ user.name }}<br>
                 <a href="mailto:{{ user.email }}">{{ user.email }}</a>
-                <ul>
-                    {% for role in user.roles %}
-                        <li>{{ role.title }}</li>
-                    {% endfor %}
-                </ul>
-            </li>
+            </p>
+        {% else %}
+            <em>No {{ role.title }}s added</em>
         {% endfor %}
-    </ol>
-</big>
+        </big>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}
