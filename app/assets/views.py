@@ -130,19 +130,23 @@ def report_lost(asset_id):
 
 @assets.route('/<asset_id>/report/found', methods=['POST'])
 def report_found(asset_id):
-    if not current_user.has_admin:
-        return render_template('errors/generic.html',
-                               message="Only admins can mark assets found")
 
     asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
 
-    if not asset.lost:
-        return render_template(
-            'errors/generic.html',
-            message="This asset is not lost"
-        )
-    asset.set_lost(False)
-    app.db.session.add(asset)
-    app.db.session.commit()
-    flash("Marked found", "success")
-    return redirect(url_for('assets.index'))
+    if current_user.has_admin or asset.check_assignee(current_user):
+        if not asset.lost:
+            return render_template(
+                'errors/generic.html',
+                message="This asset is not lost"
+            )
+        asset.set_lost(False)
+        app.db.session.add(asset)
+        app.db.session.commit()
+        flash("Reported as found", "success")
+        return redirect(url_for('assets.index'))
+
+    return render_template(
+        'errors/generic.html',
+        message="Only admins or the assigned user can mark assets found"
+    )
+
