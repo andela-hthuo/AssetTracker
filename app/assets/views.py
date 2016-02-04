@@ -93,7 +93,7 @@ def assign(asset_id):
         flash("You must select a user to assign", "danger")
 
     return render_template('assets/assign.html', form=form,
-                       heading='Assign asset', asset=asset)
+                           heading='Assign asset', asset=asset)
 
 
 @assets.route('/<asset_id>/reclaim', methods=['POST'])
