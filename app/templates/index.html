@@ -8,7 +8,9 @@
             <h4><b>{{summary.assigned}}</b> Assets Assigned to Staff Members</h4>
             <h4><b>{{summary.available}}</b> Assets Available for Assignment</h4>
             <a class="btn btn-primary" href="{{ url_for('assets.index') }}">View Assets</a>
+            {% if current_user.has_admin %}
             <a class="btn btn-primary" href="{{ url_for('assets.add') }}">Add Asset</a>
+            {% endif %}
         </div>
     </div>
 </div>
