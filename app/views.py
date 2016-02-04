@@ -170,22 +170,22 @@ def signup():
         )
 
     if invite is not None:
-    if User.query.filter_by(email=invite.invitee).first() is not None:
-        return render_template(
-            'errors/generic.html',
-            message="Email belongs to an existing user"
-        )
+        if User.query.filter_by(email=invite.invitee).first() is not None:
+            return render_template(
+                'errors/generic.html',
+                message="Email belongs to an existing user"
+            )
 
     if form.validate_on_submit():
         if invite is None:
             role = Role.get('staff')
         else:
-        role = invite.role
-        if form.email.data != invite.invitee:
-            return render_template(
-                'errors/generic.html',
-                message="Email doesn't match invite email"
-            )
+            role = invite.role
+            if form.email.data != invite.invitee:
+                return render_template(
+                    'errors/generic.html',
+                    message="Email doesn't match invite email"
+                )
 
         user = User(form.email.data, form.password.data, form.name.data)
         role.users.append(user)
@@ -196,7 +196,7 @@ def signup():
         return redirect(url_for('index'))
 
     if invite is not None:
-    form.email.data = invite.invitee
+        form.email.data = invite.invitee
     else:
         flash('Signing up without an inivite defaults to staff member account', 'warning')
     return render_template('users/signup.html', form=form)
