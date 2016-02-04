@@ -1,4 +1,28 @@
 {% extends "layout.html" %}
 {% block inner_content %}
-    <h1>Home page</h1>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="col-md-12">
+            <h3><b>{{summary.assets}}</b> Assets</h3>
+            <hr>
+            <h4><b>{{summary.assigned}}</b> Assets Assigned to Staff Members</h4>
+            <h4><b>{{summary.available}}</b> Assets Available for Assignment</h4>
+            <a class="btn btn-primary" href="{{ url_for('assets.index') }}">View Assets</a>
+            <a class="btn btn-primary" href="{{ url_for('assets.add') }}">Add Asset</a>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="col-md-12">
+            <h3><b>{{summary.users}}</b> Users</h3>
+            <hr>
+            <h4><b>{{summary.supers}}</b> Super Admins</h4>
+            <h4><b>{{summary.admins}}</b> Admins</h4>
+            <h4><b>{{summary.staff}}</b> Staff Members</h4>
+            <a class="btn btn-primary" href="{{ url_for('users') }}">View Users</a>
+            <a class="btn btn-primary" href="{{ url_for('invite_user') }}">Invite admin</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

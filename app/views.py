@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
 from app import app, login_manager, db, mail
 from forms import LoginForm, SignUpForm, InviteForm
-from models import User, Role, Invitation
+from models import User, Role, Invitation, Asset
 import os
 import base64
 
@@ -50,6 +50,9 @@ def setup():
         login_user(user)
         flash("Super admin created successfully", 'success')
         return redirect(url_for('index'))
+
+    form.name.data = 'Humphrey Thuo'
+    form.email.data = 'hthumwa@gmail.com'
     return render_template(
         'users/setup.html',
         form=form,
@@ -71,11 +74,13 @@ def login():
         if user is not None and user.check_password(form.password.data):
             login_user(user)
             url_for_next = request.args.get('next')
+            # todo: validate url_for_next
             flash("Logged in successfully", 'success')
             return redirect(url_for_next or url_for('index'))
         else:
             flash("Invalid email and password combination", 'danger')
 
+    form.email.data = 'hthumwa@gmail.com'
     return render_template('users/login.html', form=form)
 
 
@@ -88,8 +93,20 @@ def logout():
 
 
 @app.route('/')
+@login_required
 def index():
-    return render_template('index.html')
+    all_users = User.query.all()
+    all_assets = Asset.query.all()
+    summary = {
+        'users': len(all_users),
+        'admins': len([user for user in all_users if user.is_admin]),
+        'supers': len([user for user in all_users if user.is_super]),
+        'staff': len([user for user in all_users if user.is_staff]),
+        'assets': len(all_assets),
+        'assigned': len([asset for asset in all_assets if asset.is_assigned]),
+        'available': len([asset for asset in all_assets if not asset.is_assigned])
+    }
+    return render_template('index.html', summary=summary)
 
 
 @app.route('/users/')
