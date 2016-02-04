@@ -28,6 +28,7 @@
             <div class="col-md-4">Description:</div>
             <div class="col-md-8"><strong>{{ asset.description }}</strong></div>
         </div>
+        {% if current_user.has_admin %}
         <div class="col-md-12">
             <div class="col-md-4">Date of purchase:</div>
             <div class="col-md-8"><strong>{{ asset.purchased_date }}</strong></div>
@@ -36,7 +37,6 @@
             <div class="col-md-4">Added by:</div>
             <div class="col-md-8"><strong>{{ asset.added_by.name }}</strong></div>
         </div>
-        {% if current_user.has_admin %}
         {% if asset.is_assigned %}
         <div class="col-md-12">
             <div class="col-md-4">Return date:</div>
@@ -57,5 +57,7 @@
         {% endif %}
     </div>
 </div>
+{% else %}
+<p><big><em>No assets</em></big></p>
 {% endfor %}
 {% endblock %}

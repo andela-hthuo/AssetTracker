@@ -12,7 +12,7 @@ def index():
         viewable_assets = app.models.Asset.query.all()
         heading = 'All Assets'
     else:
-        viewable_assets = []  # todo: populate with assigned assets
+        viewable_assets = current_user.assets_assigned
         heading = 'Assigned Assets'
     return render_template('assets/index.html', assets=viewable_assets,
                            heading=heading)
@@ -54,7 +54,7 @@ def assign(asset_id):
         return render_template('errors/generic.html',
                                message="This asset is already assigned to %s"
                                        % asset.assignee.name)
-    
+
     form = AssignAssetForm()
     form.user.choices = [(user.id, "%s &lt;%s&gt;" % (user.name, user.email))
                          for user in app.models.User.query.all()
