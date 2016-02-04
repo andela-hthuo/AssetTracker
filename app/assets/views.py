@@ -1,9 +1,15 @@
 from flask import render_template, flash, redirect, url_for, request
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 import app
 from app.assets import assets
 from forms import AddAssetForm, AssignAssetForm
+
+
+@assets.before_request
+@login_required
+def before_request():
+    pass
 
 
 @assets.route('/')
