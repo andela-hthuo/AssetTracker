@@ -28,6 +28,16 @@
             <div class="col-md-4">Description:</div>
             <div class="col-md-8"><strong>{{ asset.description }}</strong></div>
         </div>
+        {% if asset.lost %}
+        <div class="col-md-12">
+            <div class="col-md-4">Lost:</div>
+            <div class="col-md-8">
+                <big style="color:red;">
+                    <strong>LOST</strong>
+                </big>
+            </div>
+        </div>
+        {% endif %}
         {% if current_user.has_admin %}
         <div class="col-md-12">
             <div class="col-md-4">Date of purchase:</div>
@@ -49,11 +59,25 @@
         {% endif %}
         <div class="col-md-12">
             {% if asset.is_assigned %}
+            {% if asset.lost %}
+            <a class="btn btn-primary" href="{{ url_for('assets.report_found', asset_id=asset.id) }}">Mark Found</a>
+            {% else %}
             <a class="btn btn-primary" href="{{ url_for('assets.reclaim', asset_id=asset.id) }}">Reclaim</a>
+            {% endif %}
             {% else %}
             <a class="btn btn-primary" href="{{ url_for('assets.assign', asset_id=asset.id) }}">Assign</a>
             {% endif %}
         </div>
+        {% elif asset.check_assignee(current_user) %}
+        <div class="col-md-12">
+            <div class="col-md-4">Return date:</div>
+            <div class="col-md-8"><strong>{{ asset.return_date_ }}</strong></div>
+        </div>
+        {%  if not asset.lost  %}
+        <div class="col-md-12">
+            <a class="btn btn-primary" href="{{ url_for('assets.report_lost', asset_id=asset.id) }}">Report Lost</a>
+        </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>

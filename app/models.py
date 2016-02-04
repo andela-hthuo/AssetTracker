@@ -125,7 +125,8 @@ class Asset(db.Model):
     code = db.Column(db.String(64), unique=True)
     purchased = db.Column(db.DateTime)
     added_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    return_date_ = db.Column(db.DateTime)
+    return_date = db.Column(db.DateTime)
+    lost = db.Column(db.Boolean, default=False)
 
     def __init__(self, name, asset_type, description, serial_no, code, purchased,
                  added_by):
@@ -146,6 +147,12 @@ class Asset(db.Model):
         self.return_date = None
         self.assigned_to.remove(self.assignee)
 
+    def set_lost(self, lost):
+        self.lost = lost
+
+    def check_assignee(self, user):
+        return self.is_assigned and self.assignee.id == user.id
+
     @property
     def assignee(self):
         return self.assigned_to.first()
@@ -160,4 +167,4 @@ class Asset(db.Model):
 
     @property
     def return_date_(self):
-        return self.return_date.strftime("%d, %b %Y %X")
+        return self.return_date.strftime("%d, %b %Y")
