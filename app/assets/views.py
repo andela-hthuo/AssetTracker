@@ -25,6 +25,10 @@ def index():
             viewable_assets = [asset for asset in query.all()
                                if not asset.is_assigned]
             heading = 'Unassigned Assets'
+        elif filter_by == 'lost':
+            viewable_assets = [asset for asset in query.all()
+                               if asset.lost]
+            heading = 'Assets Reported Lost'
         else:
             viewable_assets = query.all()
             heading = 'All Assets'

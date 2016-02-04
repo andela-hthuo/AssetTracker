@@ -33,6 +33,7 @@
                         <li><a href="{{ url_for('assets.index') }}">All</a></li>
                         <li><a href="{{ url_for('assets.index', filter_by='assigned') }}">Assigned</a></li>
                         <li><a href="{{ url_for('assets.index', filter_by='unassigned') }}">Unassigned</a></li>
+                        <li><a href="{{ url_for('assets.index', filter_by='lost') }}">Lost</a></li>
                     </ul>
                 </li>
                 {% else %}
