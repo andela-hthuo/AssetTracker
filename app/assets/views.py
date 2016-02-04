@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user
 
 import app
@@ -9,8 +9,19 @@ from forms import AddAssetForm, AssignAssetForm
 @assets.route('/')
 def index():
     if current_user.has_admin:
-        viewable_assets = app.models.Asset.query.all()
-        heading = 'All Assets'
+        query = app.models.Asset.query
+        filter_by = request.args.get('filter_by')
+        if filter_by == 'assigned':
+            viewable_assets = [asset for asset in query.all()
+                               if asset.is_assigned]
+            heading = 'Assigned Assets'
+        elif filter_by == 'unassigned':
+            viewable_assets = [asset for asset in query.all()
+                               if not asset.is_assigned]
+            heading = 'Unassigned Assets'
+        else:
+            viewable_assets = query.all()
+            heading = 'All Assets'
     else:
         viewable_assets = current_user.assets_assigned
         heading = 'Assigned Assets'

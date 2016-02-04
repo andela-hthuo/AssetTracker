@@ -23,26 +23,41 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-left">
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('assets.index') }}">Assets</a></li>
-                    <li><a href="{{ url_for('users') }}">Users</a></li>
+                {% if current_user.has_admin %}
+                <li class="dropdown">
+                    <a href="#" data-target="#" class="dropdown-toggle" data-toggle="dropdown">
+                        Assets
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('assets.index') }}">All</a></li>
+                        <li><a href="{{ url_for('assets.index', filter_by='assigned') }}">Assigned</a></li>
+                        <li><a href="{{ url_for('assets.index', filter_by='unassigned') }}">Unassigned</a></li>
+                    </ul>
+                </li>
                 {% else %}
+                <li><a href="{{ url_for('assets.index') }}">Assigned Assets</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('users') }}">Users</a></li>
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
-                    {% if current_user.has_admin %}
-                        <li><a href="{{ url_for('invite_user') }}">Invite admin</a></li>
-                    {% endif %}
-                    <li class="dropdown">
-                        <a href="bootstrap-elements.html" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{ current_user.name }}
-            <b class="caret"></b></a>
-                      <ul class="dropdown-menu">
+                {% if current_user.has_admin %}
+                <li><a href="{{ url_for('invite_user') }}">Invite admin</a></li>
+                {% endif %}
+                <li class="dropdown">
+                    <a href="#" data-target="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {{current_user.name }}
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                      </ul>
-                    </li>
+                    </ul>
+                </li>
                 {% else %}
-                    <li><a href="{{ url_for('login', next=request.args.get('next')) }}">Login</a></li>
-                    <li><a href="{{ url_for('signup') }}">Sign up</a></li>
+                <li><a href="{{ url_for('login', next=request.args.get('next')) }}">Login</a></li>
+                <li><a href="{{ url_for('signup') }}">Sign up</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -60,15 +75,15 @@
             </h3>
             {% endif %}
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% else %}
-                    {% for message in get_flashed_messages() %}
-                        <div class="alert alert-info">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% else %}
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
             {% endwith %}
             {% block inner_content %}{% endblock %}
         </div>
