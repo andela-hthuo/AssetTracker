@@ -21,7 +21,9 @@
             <h4><b>{{summary.admins}}</b> Admins</h4>
             <h4><b>{{summary.staff}}</b> Staff Members</h4>
             <a class="btn btn-primary" href="{{ url_for('users') }}">View Users</a>
+            {% if current_user.has_admin %}
             <a class="btn btn-primary" href="{{ url_for('invite_user') }}">Invite admin</a>
+            {% endif %}
         </div>
     </div>
 </div>
