@@ -96,7 +96,7 @@ def assign(asset_id):
                        heading='Assign asset', asset=asset)
 
 
-@assets.route('/<asset_id>/reclaim')
+@assets.route('/<asset_id>/reclaim', methods=['POST'])
 def reclaim(asset_id):
     if not current_user.has_admin:
         return render_template('errors/generic.html',
@@ -113,7 +113,7 @@ def reclaim(asset_id):
     return redirect(url_for('assets.index'))
 
 
-@assets.route('/<asset_id>/report/lost')
+@assets.route('/<asset_id>/report/lost', methods=['POST'])
 def report_lost(asset_id):
     asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
     if not asset.check_assignee(current_user):
@@ -128,7 +128,7 @@ def report_lost(asset_id):
     return redirect(url_for('assets.index'))
 
 
-@assets.route('/<asset_id>/report/found')
+@assets.route('/<asset_id>/report/found', methods=['POST'])
 def report_found(asset_id):
     if not current_user.has_admin:
         return render_template('errors/generic.html',

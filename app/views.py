@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
-from app import app, login_manager, db, mail
+from app import app, login_manager, db, mail, csrf
 from forms import LoginForm, SignUpForm, InviteForm
 from models import User, Role, Invitation, Asset
 import os
@@ -21,6 +21,14 @@ def page_not_found(e):
 @login_manager.unauthorized_handler
 def unauthorized():
     return render_template('errors/401.html'), 401
+
+
+@csrf.error_handler
+def csrf_error(reason):
+    return render_template(
+        'errors/generic.html',
+        message="%s. Someone may be trying to hack this app" % reason
+    ), 400
 
 
 @app.before_request
