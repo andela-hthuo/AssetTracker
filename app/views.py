@@ -51,8 +51,6 @@ def setup():
         flash("Super admin created successfully", 'success')
         return redirect(url_for('index'))
 
-    form.name.data = 'Humphrey Thuo'
-    form.email.data = 'hthumwa@gmail.com'
     return render_template(
         'users/setup.html',
         form=form,
@@ -80,7 +78,6 @@ def login():
         else:
             flash("Invalid email and password combination", 'danger')
 
-    form.email.data = 'hthumwa@gmail.com'
     return render_template('users/login.html', form=form)
 
 
@@ -167,7 +164,6 @@ def invite_user():
 
         return redirect(url_for('index'))
 
-    form.email.data = 'thuohm@gmail.com'
     return render_template('users/invite.html', form=form)
 
 
