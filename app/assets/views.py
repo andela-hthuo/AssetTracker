@@ -15,7 +15,7 @@ def before_request():
 @assets.route('/')
 def index():
     if current_user.has_admin:
-        query = app.models.Asset.query
+        query = app.models.Asset.query.order_by(app.models.Asset.id.desc())
         filter_by = request.args.get('filter_by')
         if filter_by == 'assigned':
             viewable_assets = [asset for asset in query.all()
