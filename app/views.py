@@ -143,7 +143,9 @@ def invite_user():
         # prepare and send invitation email
         msg = Message(
             "Inventory Manager invitation",
-            sender=current_user.email,
+            # this should be sender=current_user.email but if I do that the
+            # smtp email may get blacklisted as a spammer
+            sender=app.config.get('MAIL_USERNAME'),
             recipients=[form.email.data])
         msg.body = "You've been invited to join Inventory Manager. Follow \
             this link to sign up: %s" % invite_link
@@ -154,7 +156,7 @@ def invite_user():
             mail.send(msg)
             db.session.add(invitation)
             db.session.commit()
-            flash("Invitation sent", 'success')
+            flash("Invitation sent to %s" % form.email.data, 'success')
         except Exception, e:
             if app.config.get('DEBUG'):
                 raise e
