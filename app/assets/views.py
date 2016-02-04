@@ -17,7 +17,6 @@ def index():
 def add():
     form = AddAssetForm()
     if form.validate_on_submit():
-        pass
         asset = app.models.Asset(
             form.name.data,
             form.type.data,

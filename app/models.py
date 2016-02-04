@@ -42,6 +42,22 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    @property
+    def is_admin(self):
+        return self.roles[0].short == 'admin'
+
+    @property
+    def is_super(self):
+        return self.roles[0].short == 'superadmin'
+
+    @property
+    def has_admin(self):
+        return self.is_admin or self.is_super
+
+    @property
+    def is_staff(self):
+        return self.roles[0].short == 'staff'
+
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)

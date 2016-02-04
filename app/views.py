@@ -101,6 +101,11 @@ def users():
 @app.route('/users/invite', methods=['GET', 'POST'])
 @login_required
 def invite_user():
+    # only admins can send invites
+    if not current_user.has_admin:
+        return render_template('errors/generic.html',
+                               message="Only admins can send invites")
+
     form = InviteForm()
     # users can only add users one privilege level below them
     form.role.choices = [(role.id, role.title) for role in Role.query.all()
