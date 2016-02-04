@@ -1,8 +1,10 @@
 {% extends "layout.html" %}
 {% block inner_content %}
+{% if current_user.has_admin %}
 <p>
     <a href="{{ url_for('assets.add') }}" class="btn btn-primary btn-raised">Add Asset</a>
 </p>
+{% endif %}
 {% for asset in assets %}
 <div class="panel panel-default">
     <div class="panel-body  panel-asset-body">

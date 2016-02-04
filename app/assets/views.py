@@ -15,6 +15,10 @@ def index():
 
 @assets.route('/add', methods=['GET', 'POST'])
 def add():
+    if not current_user.has_admin:
+        return render_template('errors/generic.html',
+                               message="Only admins can add assets")
+
     form = AddAssetForm()
     if form.validate_on_submit():
         asset = app.models.Asset(
