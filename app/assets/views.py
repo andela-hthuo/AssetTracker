@@ -8,9 +8,14 @@ from forms import AddAssetForm
 
 @assets.route('/')
 def index():
-    return render_template('assets/index.html',
-                           assets=app.models.Asset.query.all(),
-                           heading='All Assets')
+    if current_user.has_admin:
+        viewable_assets = app.models.Asset.query.all()
+        heading = 'All Assets'
+    else:
+        viewable_assets = []  # todo: populate with assigned assets
+        heading = 'Assigned Assets'
+    return render_template('assets/index.html', assets=viewable_assets,
+                           heading=heading)
 
 
 @assets.route('/add', methods=['GET', 'POST'])
