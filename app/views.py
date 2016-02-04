@@ -155,13 +155,16 @@ def signup():
         return redirect(url_for('index'))
 
     form = SignUpForm()
-    invite = Invitation.get(request.args.get('invite'))
-    if invite is None:
+    token = request.args.get('invite')
+    invite = Invitation.get(token)
+
+    if token and not invite:
         return render_template(
             'errors/generic.html',
-            message="Invalid invite"
+            message="The invite is invalid"
         )
 
+    if invite is not None:
     if User.query.filter_by(email=invite.invitee).first() is not None:
         return render_template(
             'errors/generic.html',
@@ -169,6 +172,9 @@ def signup():
         )
 
     if form.validate_on_submit():
+        if invite is None:
+            role = Role.get('staff')
+        else:
         role = invite.role
         if form.email.data != invite.invitee:
             return render_template(
@@ -184,5 +190,8 @@ def signup():
         flash("Sign up successful", 'success')
         return redirect(url_for('index'))
 
+    if invite is not None:
     form.email.data = invite.invitee
+    else:
+        flash('Signing up without an inivite defaults to staff member account', 'warning')
     return render_template('users/signup.html', form=form)

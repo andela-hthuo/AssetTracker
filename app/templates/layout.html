@@ -40,6 +40,7 @@
                     </li>
                 {% else %}
                     <li><a href="{{ url_for('login', next=request.args.get('next')) }}">Login</a></li>
+                    <li><a href="{{ url_for('signup') }}">Sign up</a></li>
                 {% endif %}
             </ul>
         </div>
