@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block styles %}
+{{ super() }}
+<link href="{{ url_for('static', filename='css/bootstrap-datetimepicker.css') }}" rel="stylesheet">
+{% endblock%}
+{% block inner_content %}
+<form class="form" action="{{ url_for('assets.assign', asset_id=asset.id) }}" method="post" role="form">
+    {{ form.hidden_tag() }}
+    {{ wtf.form_errors(form, hiddens="only") }}
+    {{ wtf.form_field(form.return_date, id='return_date') }}
+    {{ form.user.label }}
+    {{ wtf.form_field(form.user) }}
+    {{ wtf.form_field(form.submit, class='btn btn-primary btn-raised') }}
+</form>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-datetimepicker.min.js') }}"></script>
+<script>
+$(function () {
+    $('#return_date').datetimepicker({format: 'DD/MM/YYYY'});
+    })
+</script>
+{% endblock %}

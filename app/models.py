@@ -9,6 +9,12 @@ roles = db.Table(
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+assignment = db.Table(
+    'assignment',
+    db.Column('asset_id', db.Integer, db.ForeignKey('asset.id')),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+)
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +35,11 @@ class User(db.Model, UserMixin):
         'Asset',
         backref=db.backref('added_by', lazy='joined'),
         lazy='dynamic',
+    )
+    assets_assigned = db.relationship(
+        'Asset',
+        secondary=assignment,
+        backref=db.backref('assigned_to', lazy='dynamic')
     )
 
     def __init__(self, email, password, name):
@@ -114,6 +125,7 @@ class Asset(db.Model):
     code = db.Column(db.String(64), unique=True)
     purchased = db.Column(db.DateTime)
     added_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    return_date_ = db.Column(db.DateTime)
 
     def __init__(self, name, asset_type, description, serial_no, code, purchased,
                  added_by):
@@ -123,8 +135,29 @@ class Asset(db.Model):
         self.serial_no = serial_no
         self.code = code
         self.purchased = purchased
+        self.return_date = None
         added_by.assets_added.append(self)
+
+    def assign(self, assignee, return_date):
+        self.return_date = return_date
+        self.assigned_to.append(assignee)
+
+    def reclaim(self):
+        self.return_date = None
+        self.assigned_to.remove(self.assignee)
+
+    @property
+    def assignee(self):
+        return self.assigned_to.first()
+
+    @property
+    def is_assigned(self):
+        return self.assignee is not None
 
     @property
     def purchased_date(self):
         return self.purchased.strftime("%d, %b %Y")
+
+    @property
+    def return_date_(self):
+        return self.return_date.strftime("%d, %b %Y %X")
