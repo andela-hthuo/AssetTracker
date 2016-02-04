@@ -59,6 +59,11 @@ def setup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # if there's a user logged in, no need to continue with log in
+    if current_user.is_authenticated:
+        flash("You're already logged in", "info")
+        return redirect(url_for('index'))
+
     form = LoginForm()
     if form.validate_on_submit():
         # the method is POST and the form is valid
@@ -132,7 +137,8 @@ def invite_user():
             if app.config.get('DEBUG'):
                 raise e
             else:
-                flash("Failed to send invite due to a %s error" % e.__class__.__name__, 'danger')
+                flash("Failed to send invite due to a %s error"
+                      % e.__class__.__name__, 'danger')
                 return render_template('users/invite.html', form=form)
 
         return redirect(url_for('index'))
@@ -143,6 +149,11 @@ def invite_user():
 
 @app.route('/users/signup', methods=['GET', 'POST'])
 def signup():
+    # if there's a user logged in, no need to continue with sign up
+    if current_user.is_authenticated:
+        flash("You're already logged in", "info")
+        return redirect(url_for('index'))
+
     form = SignUpForm()
     invite = Invitation.get(request.args.get('invite'))
     if invite is None:
