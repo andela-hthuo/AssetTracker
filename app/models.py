@@ -176,6 +176,5 @@ class Asset(db.Model):
 
     @property
     def return_date_near(self):
-        delta = datetime.now() - self.return_date
-        return delta.days <= 1
-
+        delta = self.return_date - datetime.now()
+        return not self.return_date_past and delta.days <= 2
