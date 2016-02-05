@@ -50,7 +50,15 @@
             {% if asset.check_assignee(current_user) or current_user.has_admin %}
             <div class="col-md-12">
                 <div class="col-md-4">Return date:</div>
-                <div class="col-md-8"><strong>{{ asset.return_date_ }}</strong></div>
+                <div class="col-md-8">
+                    <strong>{{ asset.return_date_ }}</strong>
+                    {% if asset.return_date_past %}
+                        <span style="color:red;">(Item should have been returned already)</span>
+                    {% endif %}
+                    {% if asset.return_date_near %}
+                        <span style="color:orange;">(Item return date is close)</span>
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
             {% if current_user.has_admin %}

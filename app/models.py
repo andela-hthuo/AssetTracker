@@ -1,3 +1,4 @@
+from datetime import datetime
 from werkzeug.security import generate_password_hash, \
      check_password_hash
 from flask_login import UserMixin
@@ -168,3 +169,13 @@ class Asset(db.Model):
     @property
     def return_date_(self):
         return self.return_date.strftime("%d, %b %Y")
+
+    @property
+    def return_date_past(self):
+        return datetime.now() > self.return_date
+
+    @property
+    def return_date_near(self):
+        delta = datetime.now() - self.return_date
+        return delta.days <= 1
+
