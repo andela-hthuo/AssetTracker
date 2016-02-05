@@ -6,12 +6,17 @@
 </p>
 {% endif %}
 {% for asset in assets %}
-<div class="panel panel-default">
-    <div class="panel-body  panel-asset-body">
+<div class="panel panel-primary">
+    <div class="panel-heading">
         <div class="col-md-12">
             <div class="col-md-4">Name:</div>
-            <div class="col-md-8"><strong>{{ asset.name }}</strong></div>
+            <div class="col-md-8">
+                <big><strong>{{ asset.name }}</strong></big>
+            </div>
         </div>
+        <div class="clearfix"></div>
+    </div>
+    <div class="panel-body  panel-asset-body">
         <div class="col-md-12">
             <div class="col-md-4">Type:</div>
             <div class="col-md-8"><strong>{{ asset.type }}</strong></div>
@@ -28,71 +33,70 @@
             <div class="col-md-4">Description:</div>
             <div class="col-md-8"><strong>{{ asset.description }}</strong></div>
         </div>
-        {% if asset.lost %}
-        <div class="col-md-12">
-            <div class="col-md-4">Lost:</div>
-            <div class="col-md-8">
-                <big style="color:red;">
-                    <strong>LOST</strong>
-                </big>
-            </div>
-        </div>
-        {% endif %}
         {% if current_user.has_admin %}
-        <div class="col-md-12">
-            <div class="col-md-4">Date of purchase:</div>
-            <div class="col-md-8"><strong>{{ asset.purchased_date }}</strong></div>
-        </div>
-        <div class="col-md-12">
-            <div class="col-md-4">Added by:</div>
-            <div class="col-md-8"><strong>{{ asset.added_by.name }}</strong></div>
-        </div>
+            <div class="col-md-12">
+                <div class="col-md-4">Date of purchase:</div>
+                <div class="col-md-8"><strong>{{ asset.purchased_date }}</strong></div>
+            </div>
+            <div class="col-md-12">
+                <div class="col-md-4">Added by:</div>
+                <div class="col-md-8"><strong>{{ asset.added_by.name }}</strong></div>
+            </div>
+        {% endif %}
         {% if asset.is_assigned %}
-        <div class="col-md-12">
-            <div class="col-md-4">Return date:</div>
-            <div class="col-md-8"><strong>{{ asset.return_date_ }}</strong></div>
-        </div>
-        <div class="col-md-12">
-            <div class="col-md-4">Assigned to:</div>
-            <div class="col-md-8"><strong>{{ asset.assignee.name }}</strong></div>
-        </div>
+            <div class="col-md-12">
+                <hr>
+            </div>
+            {% if asset.check_assignee(current_user) or current_user.has_admin %}
+            <div class="col-md-12">
+                <div class="col-md-4">Return date:</div>
+                <div class="col-md-8"><strong>{{ asset.return_date_ }}</strong></div>
+            </div>
+            {% endif %}
+            {% if current_user.has_admin %}
+                <div class="col-md-12">
+                    <div class="col-md-4">Assigned to:</div>
+                    <div class="col-md-8"><strong>{{ asset.assignee.name }}</strong></div>
+                </div>
+            {% endif %}
+        {% endif %}
+        {% if asset.lost %}
+            <div class="col-md-12">
+                <div class="col-md-4">Lost:</div>
+                <div class="col-md-8">
+                    <big style="color:red;">
+                        <strong>LOST</strong>
+                    </big>
+                </div>
+            </div>
         {% endif %}
         <div class="col-md-12">
             {% if asset.is_assigned %}
-            {% if asset.lost %}
-            <form action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="submit" class="btn btn-primary" value="Report Found">
-            </form>
-            {% else %}
-            <form action="{{ url_for('assets.reclaim', asset_id=asset.id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="submit" class="btn btn-primary" value="Reclaim">
-            </form>
+                {% if asset.lost %}
+                    {% if current_user.has_admin or asset.check_assignee(current_user) %}
+                        <form action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="submit" class="btn btn-primary" value="Report Found">
+                        </form>
+                    {% endif %}
+                {% else %}
+                    {% if asset.check_assignee(current_user) %}
+                    <form action="{{ url_for('assets.report_lost', asset_id=asset.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="submit" class="btn btn-primary" value="Report Lost">
+                    </form>
+                    {% endif %}
+                    {% if current_user.has_admin %}
+                    <form action="{{ url_for('assets.reclaim', asset_id=asset.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="submit" class="btn btn-primary" value="Reclaim">
+                    </form>
+                    {% endif %}
+                {% endif %}
+            {% elif current_user.has_admin %}
+                <a class="btn btn-primary" href="{{ url_for('assets.assign', asset_id=asset.id) }}">Assign</a>
             {% endif %}
-            {% else %}
-            <a class="btn btn-primary" href="{{ url_for('assets.assign', asset_id=asset.id) }}">Assign</a>
-            {% endif %}
         </div>
-        {% elif asset.check_assignee(current_user) %}
-        <div class="col-md-12">
-            <div class="col-md-4">Return date:</div>
-            <div class="col-md-8"><strong>{{ asset.return_date_ }}</strong></div>
-        </div>
-        <div class="col-md-12">
-        {%  if not asset.lost  %}
-            <form action="{{ url_for('assets.report_lost', asset_id=asset.id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="submit" class="btn btn-primary" value="Report Lost">
-            </form>
-        {% else %}
-            <form action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="submit" class="btn btn-primary" value="Report Found">
-            </form>
-        {% endif %}
-        </div>
-        {% endif %}
     </div>
 </div>
 {% else %}

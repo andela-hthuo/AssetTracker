@@ -221,5 +221,5 @@ def signup():
     if invite is not None:
         form.email.data = invite.invitee
     else:
-        flash('Signing up without an inivite defaults to staff member account', 'warning')
+        flash('Signing up without an inivite defaults to staff member account', 'info')
     return render_template('users/signup.html', form=form)
