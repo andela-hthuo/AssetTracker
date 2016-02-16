@@ -1,7 +1,7 @@
 from wtforms import StringField, SubmitField, PasswordField,\
     validators, SelectField
 from flask_wtf import Form
-from models import User
+from app.models import User
 
 
 class LoginForm(Form):

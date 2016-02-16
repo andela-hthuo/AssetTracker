@@ -25,7 +25,9 @@ def create_app(config_file_name):
     Bootstrap(app)
 
     from app.assets import assets as assets_blueprint
+    from app.auth import auth as auth_blueprint
     app.register_blueprint(assets_blueprint, url_prefix='/assets')
+    app.register_blueprint(auth_blueprint)
 
     with app.app_context():
         import views
