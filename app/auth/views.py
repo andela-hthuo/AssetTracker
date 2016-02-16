@@ -19,7 +19,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return render_template('errors/401.html'), 401
+    return render_template('error/401.html'), 401
 
 
 @auth.route('/setup', methods=['GET', 'POST'])
@@ -41,7 +41,7 @@ def setup():
         return redirect(url_for('index'))
 
     return render_template(
-        'users/setup.html',
+        'auth/setup.html',
         form=form,
         heading="Create super admin account"
     )
@@ -67,7 +67,7 @@ def login():
         else:
             flash("Invalid email and password combination", 'danger')
 
-    return render_template('users/login.html', form=form)
+    return render_template('auth/login.html', form=form)
 
 
 @auth.route("/logout")
@@ -81,7 +81,7 @@ def logout():
 @auth.route('/users/')
 @login_required
 def users():
-    return render_template('users/index.html', roles=Role.query.all())
+    return render_template('auth/users.html', roles=Role.query.all())
 
 
 @auth.route('/users/invite', methods=['GET', 'POST'])
@@ -89,7 +89,7 @@ def users():
 def invite_user():
     # only admins can send invites
     if not current_user.has_admin:
-        return render_template('errors/generic.html',
+        return render_template('error/generic.html',
                                message="Only admins can send invites")
 
     form = InviteForm()
@@ -132,11 +132,11 @@ def invite_user():
             else:
                 flash("Failed to send invite due to a %s error"
                       % e.__class__.__name__, 'danger')
-                return render_template('users/invite.html', form=form)
+                return render_template('auth/invite.html', form=form)
 
         return redirect(url_for('index'))
 
-    return render_template('users/invite.html', form=form)
+    return render_template('auth/invite.html', form=form)
 
 
 @auth.route('/users/signup', methods=['GET', 'POST'])
@@ -152,14 +152,14 @@ def signup():
 
     if token and not invite:
         return render_template(
-            'errors/generic.html',
+            'error/generic.html',
             message="The invite is invalid"
         )
 
     if invite is not None:
         if User.query.filter_by(email=invite.invitee).first() is not None:
             return render_template(
-                'errors/generic.html',
+                'error/generic.html',
                 message="Email belongs to an existing user"
             )
 
@@ -170,7 +170,7 @@ def signup():
             role = invite.role
             if form.email.data != invite.invitee:
                 return render_template(
-                    'errors/generic.html',
+                    'error/generic.html',
                     message="Email doesn't match invite email"
                 )
 
@@ -186,4 +186,4 @@ def signup():
         form.email.data = invite.invitee
     else:
         flash('Signing up without an inivite defaults to staff member account', 'info')
-    return render_template('users/signup.html', form=form)
+    return render_template('auth/signup.html', form=form)

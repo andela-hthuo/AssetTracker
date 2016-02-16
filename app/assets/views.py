@@ -43,7 +43,7 @@ def index():
 @assets.route('/add', methods=['GET', 'POST'])
 def add():
     if not current_user.has_admin:
-        return render_template('errors/generic.html',
+        return render_template('error/generic.html',
                                message="Only admins can add assets")
 
     form = AddAssetForm()
@@ -68,12 +68,12 @@ def add():
 @assets.route('/<asset_id>/assign', methods=['GET', 'POST'])
 def assign(asset_id):
     if not current_user.has_admin:
-        return render_template('errors/generic.html',
+        return render_template('error/generic.html',
                                message="Only admins can assign assets")
 
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if asset.is_assigned:
-        return render_template('errors/generic.html',
+        return render_template('error/generic.html',
                                message="This asset is already assigned to %s"
                                        % asset.assignee.name)
 
@@ -100,7 +100,7 @@ def assign(asset_id):
 @assets.route('/<asset_id>/reclaim', methods=['POST'])
 def reclaim(asset_id):
     if not current_user.has_admin:
-        return render_template('errors/generic.html',
+        return render_template('error/generic.html',
                                message="Only admins can reclaim assets")
 
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
@@ -119,7 +119,7 @@ def report_lost(asset_id):
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if not asset.check_assignee(current_user):
         return render_template(
-            'errors/generic.html',
+            'error/generic.html',
             message="You can only report assets assigned to you"
         )
     asset.set_lost(True)
@@ -137,7 +137,7 @@ def report_found(asset_id):
     if current_user.has_admin or asset.check_assignee(current_user):
         if not asset.lost:
             return render_template(
-                'errors/generic.html',
+                'error/generic.html',
                 message="This asset is not lost"
             )
         asset.set_lost(False)
@@ -147,7 +147,7 @@ def report_found(asset_id):
         return redirect(url_for('assets.index'))
 
     return render_template(
-        'errors/generic.html',
+        'error/generic.html',
         message="Only admins or the assigned user can mark assets found"
     )
 

@@ -7,13 +7,13 @@ from models import User, Asset
 
 @current_app.errorhandler(404)
 def page_not_found(e):
-    return render_template('errors/404.html'), 404
+    return render_template('error/404.html'), 404
 
 
 @csrf.error_handler
 def csrf_error(reason):
     return render_template(
-        'errors/generic.html',
+        'error/generic.html',
         message="%s. Someone may be trying to hack this app" % reason
     ), 400
 
