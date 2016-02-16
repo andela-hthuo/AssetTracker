@@ -1,7 +1,8 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, \
+    current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
-from app import app, login_manager, db, mail, csrf
+from app import login_manager, db, mail, csrf
 from forms import LoginForm, SignUpForm, InviteForm
 from models import User, Role, Invitation, Asset
 import os
@@ -13,7 +14,7 @@ def load_user(user_id):
     return User.query.filter_by(id=user_id).first()
 
 
-@app.errorhandler(404)
+@current_app.errorhandler(404)
 def page_not_found(e):
     return render_template('errors/404.html'), 404
 
@@ -31,7 +32,7 @@ def csrf_error(reason):
     ), 400
 
 
-@app.before_request
+@current_app.before_request
 def before_request():
     if not User.query.all():
         # if no users in the database, the app need to be set up
@@ -41,7 +42,7 @@ def before_request():
             return redirect(url_for('setup'))
 
 
-@app.route('/setup', methods=['GET', 'POST'])
+@current_app.route('/setup', methods=['GET', 'POST'])
 def setup():
     # if there are users in the DB, the app is already set up
     if User.query.all():
@@ -66,7 +67,7 @@ def setup():
     )
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@current_app.route('/login', methods=['GET', 'POST'])
 def login():
     # if there's a user logged in, no need to continue with log in
     if current_user.is_authenticated:
@@ -89,7 +90,7 @@ def login():
     return render_template('users/login.html', form=form)
 
 
-@app.route("/logout")
+@current_app.route("/logout")
 @login_required
 def logout():
     logout_user()
@@ -97,7 +98,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/')
+@current_app.route('/')
 @login_required
 def index():
     all_users = User.query.all()
@@ -114,13 +115,13 @@ def index():
     return render_template('index.html', summary=summary)
 
 
-@app.route('/users/')
+@current_app.route('/users/')
 @login_required
 def users():
     return render_template('users/index.html', roles=Role.query.all())
 
 
-@app.route('/users/invite', methods=['GET', 'POST'])
+@current_app.route('/users/invite', methods=['GET', 'POST'])
 @login_required
 def invite_user():
     # only admins can send invites
@@ -150,7 +151,7 @@ def invite_user():
             "Inventory Manager invitation",
             # this should be sender=current_user.email but if I do that the
             # smtp email may get blacklisted as a spammer
-            sender=app.config.get('MAIL_USERNAME'),
+            sender=current_app.config.get('MAIL_USERNAME'),
             recipients=[form.email.data])
         msg.body = "You've been invited to join Inventory Manager. Follow \
             this link to sign up: %s" % invite_link
@@ -163,7 +164,7 @@ def invite_user():
             db.session.commit()
             flash("Invitation sent to %s" % form.email.data, 'success')
         except Exception, e:
-            if app.config.get('DEBUG'):
+            if current_app.config.get('DEBUG'):
                 raise e
             else:
                 flash("Failed to send invite due to a %s error"
@@ -175,7 +176,7 @@ def invite_user():
     return render_template('users/invite.html', form=form)
 
 
-@app.route('/users/signup', methods=['GET', 'POST'])
+@current_app.route('/users/signup', methods=['GET', 'POST'])
 def signup():
     # if there's a user logged in, no need to continue with sign up
     if current_user.is_authenticated:

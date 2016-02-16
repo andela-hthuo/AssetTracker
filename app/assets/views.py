@@ -1,8 +1,9 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 
-import app
+from app import db
 from app.assets import assets
+from app.models import Asset, User
 from forms import AddAssetForm, AssignAssetForm
 
 
@@ -15,7 +16,7 @@ def before_request():
 @assets.route('/')
 def index():
     if current_user.has_admin:
-        query = app.models.Asset.query.order_by(app.models.Asset.id.desc())
+        query = Asset.query.order_by(Asset.id.desc())
         filter_by = request.args.get('filter_by')
         if filter_by == 'assigned':
             viewable_assets = [asset for asset in query.all()
@@ -47,7 +48,7 @@ def add():
 
     form = AddAssetForm()
     if form.validate_on_submit():
-        asset = app.models.Asset(
+        asset = Asset(
             form.name.data,
             form.type.data,
             form.description.data,
@@ -56,8 +57,8 @@ def add():
             form.purchased.data,
             current_user
         )
-        app.db.session.add(asset)
-        app.db.session.commit()
+        db.session.add(asset)
+        db.session.commit()
         flash("Asset added", "success")
         return redirect(url_for('assets.index'))
 
@@ -70,7 +71,7 @@ def assign(asset_id):
         return render_template('errors/generic.html',
                                message="Only admins can assign assets")
 
-    asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if asset.is_assigned:
         return render_template('errors/generic.html',
                                message="This asset is already assigned to %s"
@@ -78,15 +79,15 @@ def assign(asset_id):
 
     form = AssignAssetForm()
     form.user.choices = [(user.id, "%s &lt;%s&gt;" % (user.name, user.email))
-                         for user in app.models.User.query.all()
+                         for user in User.query.all()
                          if user.is_staff]
 
     if form.validate_on_submit():
-        user = app.models.User.query.filter_by(id=form.user.data).first()
+        user = User.query.filter_by(id=form.user.data).first()
         if user is not None:
             asset.assign(user, form.return_date.data)
-            app.db.session.add_all([asset, user])
-            app.db.session.commit()
+            db.session.add_all([asset, user])
+            db.session.commit()
             flash("Asset assigned to %s" % user.name, "success")
             return redirect(url_for('assets.index'))
 
@@ -102,12 +103,12 @@ def reclaim(asset_id):
         return render_template('errors/generic.html',
                                message="Only admins can reclaim assets")
 
-    asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
     # copy the name 'cause assignee will be removed
     name = asset.assignee.name[:]
     asset.reclaim()
-    app.db.session.add(asset)
-    app.db.session.commit()
+    db.session.add(asset)
+    db.session.commit()
 
     flash("Asset reclaimed from %s" % name, "success")
     return redirect(url_for('assets.index'))
@@ -115,15 +116,15 @@ def reclaim(asset_id):
 
 @assets.route('/<asset_id>/report/lost', methods=['POST'])
 def report_lost(asset_id):
-    asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if not asset.check_assignee(current_user):
         return render_template(
             'errors/generic.html',
             message="You can only report assets assigned to you"
         )
     asset.set_lost(True)
-    app.db.session.add(asset)
-    app.db.session.commit()
+    db.session.add(asset)
+    db.session.commit()
     flash("Reported", "success")
     return redirect(url_for('assets.index'))
 
@@ -131,7 +132,7 @@ def report_lost(asset_id):
 @assets.route('/<asset_id>/report/found', methods=['POST'])
 def report_found(asset_id):
 
-    asset = app.models.Asset.query.filter_by(id=asset_id).first_or_404()
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
 
     if current_user.has_admin or asset.check_assignee(current_user):
         if not asset.lost:
@@ -140,8 +141,8 @@ def report_found(asset_id):
                 message="This asset is not lost"
             )
         asset.set_lost(False)
-        app.db.session.add(asset)
-        app.db.session.commit()
+        db.session.add(asset)
+        db.session.commit()
         flash("Reported as found", "success")
         return redirect(url_for('assets.index'))
 

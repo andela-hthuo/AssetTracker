@@ -5,33 +5,29 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CsrfProtect
 
-from app.assets import assets
-
 import config
 
-app = Flask(__name__)
-
-# Config
-app.config.from_object(config)
-app.config.from_envvar('FLASK_CONFIG_FILE')
-
-# initialize Flask-SQLAlchemy
-db = SQLAlchemy(app)
-
-# initialize Flask-Bootstrap
-Bootstrap(app)
-
-# initialize Flask-Login
+db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.init_app(app)
+mail = Mail()
+csrf = CsrfProtect()
 
-# initialize Flask-Mail
-mail = Mail(app)
 
-# initialize CsrfProtect
-csrf = CsrfProtect(app)
+def create_app(config_file_name):
+    app = Flask(__name__)
+    app.config.from_object(config)
+    app.config.from_envvar(config_file_name)
 
-# Register assets blueprint
-app.register_blueprint(assets, url_prefix='/assets')
+    db.init_app(app)
+    login_manager.init_app(app)
+    mail.init_app(app)
+    csrf.init_app(app)
+    Bootstrap(app)
 
-import views
+    from app.assets import assets as assets_blueprint
+    app.register_blueprint(assets_blueprint, url_prefix='/assets')
+
+    with app.app_context():
+        import views
+
+    return app
