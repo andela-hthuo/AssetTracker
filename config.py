@@ -11,6 +11,8 @@ class Config(object):
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ['MAIL_USERNAME']
     MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
+    GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
+    GOOGLE_WEB_CLIENT_ID = os.environ['GOOGLE_WEB_CLIENT_ID']
 
 
 class ProductionConfig(Config):
