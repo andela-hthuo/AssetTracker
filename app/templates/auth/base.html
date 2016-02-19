@@ -4,7 +4,6 @@
 {{ super() }}
 {% endblock %}
 {% block inner_content %}
-<form class="form" action="{{ url_for('auth.login', next=request.args.get('next')) }}" method="post" role="form">
     <div class="g-signin2" data-onsuccess="onSignIn" data-longtitle="true" data-width="200"></div>
     <div class="row">
         <div class="col-md-12 ">
@@ -15,7 +14,6 @@
         </div>
     </div>
     {% block auth_content %}{% endblock %}
-</form>
 {% endblock %}
 {% block scripts %}
 {{ super() }}
