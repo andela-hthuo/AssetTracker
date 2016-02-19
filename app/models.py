@@ -43,10 +43,12 @@ class User(db.Model, UserMixin):
         backref=db.backref('assigned_to', lazy='dynamic')
     )
 
-    def __init__(self, email, password, name):
+    def __init__(self, email, password, name, role_short='staff'):
         self.email = email
-        self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password) if password else None
         self.name = name
+        role = Role.get(role_short)
+        role.users.append(self)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

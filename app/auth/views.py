@@ -30,11 +30,8 @@ def setup():
 
     form = SignUpForm()
     if form.validate_on_submit():
-        role = Role.get('superadmin')
-        user = User(form.email.data, form.password.data, form.name.data)
-        role.users.append(user)
+        user = User(form.email.data, form.password.data, form.name.data, 'superadmin')
         db.session.add(user)
-        db.session.add(role)
         db.session.commit()
         login_user(user)
         flash("Super admin created successfully", 'success')
@@ -165,18 +162,17 @@ def signup():
 
     if form.validate_on_submit():
         if invite is None:
-            role = Role.get('staff')
+            role_short = 'staff'
         else:
-            role = invite.role
+            role_short = invite.role.short
             if form.email.data != invite.invitee:
                 return render_template(
                     'error/generic.html',
                     message="Email doesn't match invite email"
                 )
 
-        user = User(form.email.data, form.password.data, form.name.data)
-        role.users.append(user)
-        db.session.add_all([user, role])
+        user = User(form.email.data, form.password.data, form.name.data, role_short)
+        db.session.add(user)
         db.session.commit()
         login_user(user)
         flash("Sign up successful", 'success')
