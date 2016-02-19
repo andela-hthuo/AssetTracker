@@ -1,13 +1,16 @@
 import base64
 import os
+import json
 
 from flask import render_template, redirect, url_for, flash, request, \
     current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_mail import Message
-from app.models import User, Role, Invitation
+from oauth2client import client, crypt
+
 
 from app import login_manager, db, mail
+from app.models import User, Role, Invitation, GoogleUser
 from app.auth import auth
 from app.auth.forms import LoginForm, SignUpForm, InviteForm
 
@@ -183,3 +186,56 @@ def signup():
     else:
         flash('Signing up without an inivite defaults to staff member account', 'info')
     return render_template('auth/signup.html', form=form)
+
+
+@auth.route('/oauth/google', methods=['GET', 'POST'])
+def google_sign_in():
+    # if there's a user logged in, no need to continue with log in
+    if current_user.is_authenticated:
+        flash("You're already logged in", "info")
+        return redirect(url_for('index'))
+
+    id_token = request.form.get('id_token')
+    if not id_token:
+        flash("Invalid Google sign in token", "danger")
+        return redirect(url_for('auth.login', next=request.args.get('next')))
+
+    try:
+        id_info = client.verify_id_token(id_token, current_app.config['GOOGLE_CLIENT_ID'])
+        print id_info
+        if id_info['aud'] != current_app.config['GOOGLE_WEB_CLIENT_ID']:
+            raise crypt.AppIdentityError("Unrecognized client.")
+        if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise crypt.AppIdentityError("Wrong issuer.")
+        # if id_info['hd'] != request.headers['Host']:
+        #     raise crypt.AppIdentityError("Wrong hosted domain.")
+
+    except crypt.AppIdentityError:
+        flash("Invalid Google sign in token for ", "danger")
+        return redirect(url_for('auth.login', next=request.args.get('next'))), 400
+
+    # todo: check if email is in use
+    google_id = id_info['sub']
+    google_user = GoogleUser.query.filter_by(google_id=google_id).first()
+    if not google_user:
+        if User.query.filter_by(email=id_info['email']).first() is not None:
+            return json.dumps({
+                'flash': {
+                    'category': 'danger',
+                    'message': 'Email belongs to an existing user'
+                }
+            })
+
+        # todo: check if user has an invite
+        user = User(id_info['email'], None, id_info['name'], 'staff')
+        db.session.add(user)
+        db.session.commit()
+        google_user = GoogleUser(google_id, user)
+        db.session.add(google_user)
+        db.session.commit()
+
+    login_user(google_user.user)
+    flash("Logged in successfully", "success")
+    return json.dumps({
+        'redirect': url_for('index')
+    })
