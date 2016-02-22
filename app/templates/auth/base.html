@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block head %}
+<meta name="google-signin-client_id" content="370172739877-8vmqlv4che8ecbjkivbpncm1c7a13e3c.apps.googleusercontent.com">
+{{ super() }}
+{% endblock %}
+{% block inner_content %}
+    <div class="g-signin2" data-onsuccess="onSignIn" data-longtitle="true" data-width="200"></div>
+    <div class="row">
+        <div class="col-md-12 ">
+            <hr>
+            <big><strong>
+                {% block auth_title %}{% endblock %}
+            </strong></big>
+        </div>
+    </div>
+    {% block auth_content %}{% endblock %}
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script src="https://apis.google.com/js/platform.js"></script>
+<script>
+    function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+        console.log('Name: ' + profile.getName());
+        console.log('Image URL: ' + profile.getImageUrl());
+        console.log('Email: ' + profile.getEmail());
+        $.ajax({
+            method: "POST",
+            url: "{{url_for('auth.google_sign_in', **request.args)}}",
+            data: {
+                id_token: googleUser.getAuthResponse().id_token,
+                csrf_token: '{{ csrf_token() }}'
+            }
+        }).done(function(data) {
+            console.log(data);
+            data = $.parseJSON(data)
+            if(data.redirect) {
+                window.location = data.redirect;
+            }
+            if(data.flash) {
+                $('.g-signin2').before( '<div class="alert alert-'
+                    + data.flash.category + '">'
+                    + data.flash.message + '</div>' );
+            }
+        }).fail(function(err) {
+            document.write(err.responseText);
+        });
+
+    }
+    function onFailure(error) {
+        console.log(error);
+    }
+</script>
+{% endblock %}

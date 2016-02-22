@@ -22,6 +22,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(66))
     name = db.Column(db.String(255))
+    profile_pic_url = db.Column(db.String(255))
     roles = db.relationship(
         'Role',
         secondary=roles,
@@ -42,17 +43,25 @@ class User(db.Model, UserMixin):
         secondary=assignment,
         backref=db.backref('assigned_to', lazy='dynamic')
     )
+    google_id = db.relationship(
+        'GoogleUser',
+        backref=db.backref('user', lazy='joined', uselist=False),
+        uselist=False,
+        lazy='joined',
+    )
 
-    def __init__(self, email, password, name):
+    def __init__(self, email, password, name, role_short='staff'):
         self.email = email
-        self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password) if password else None
         self.name = name
+        role = Role.get(role_short)
+        role.users.append(self)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password, password)
+        return self.password and check_password_hash(self.password, password)
 
     @property
     def is_admin(self):
@@ -69,6 +78,16 @@ class User(db.Model, UserMixin):
     @property
     def is_staff(self):
         return self.roles[0].short == 'staff'
+
+
+class GoogleUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    google_id = db.Column(db.String(32), unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, google_id, user):
+        self.google_id = google_id
+        user.google_id = self
 
 
 class Role(db.Model):

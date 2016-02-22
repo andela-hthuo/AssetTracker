@@ -24,9 +24,9 @@
             <h4><b>{{summary.supers}}</b> Super Admins</h4>
             <h4><b>{{summary.admins}}</b> Admins</h4>
             <h4><b>{{summary.staff}}</b> Staff Members</h4>
-            <a class="btn btn-primary" href="{{ url_for('users') }}">View Users</a>
+            <a class="btn btn-primary" href="{{ url_for('auth.users') }}">View Users</a>
             {% if current_user.has_admin %}
-            <a class="btn btn-primary" href="{{ url_for('invite_user') }}">Invite admin</a>
+            <a class="btn btn-primary" href="{{ url_for('auth.invite_user') }}">Invite admin</a>
             {% endif %}
         </div>
     </div>
