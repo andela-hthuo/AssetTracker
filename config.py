@@ -6,7 +6,7 @@ class Config(object):
     SECRET_KEY = 'kSec2e+iZlgjjKChKdUY5Iw0kurzjsGX'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp.mailgun.org'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ['MAIL_USERNAME']

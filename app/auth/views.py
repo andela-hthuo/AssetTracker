@@ -111,14 +111,12 @@ def invite_user():
 
         # prepare and send invitation email
         msg = Message(
-            "Inventory Manager invitation",
-            # this should be sender=current_user.email but if I do that the
-            # smtp email may get blacklisted as a spammer
-            sender=current_app.config.get('MAIL_USERNAME'),
+            "Asset Tracker Invitation",
+            sender=(current_user.name, current_user.email),
             recipients=[form.email.data])
-        msg.body = "You've been invited to join Inventory Manager. Follow \
+        msg.body = "You've been invited to join Asset Tracker. Follow \
             this link to sign up: %s" % invite_link
-        msg.html = "You've been invited to join Inventory Manager. Follow \
+        msg.html = "You've been invited to join Asset Tracker. Follow \
             this link to sign up:<br> <a href=\"%s\">%s</a>" % \
             (invite_link, invite_link)
         try:
@@ -202,7 +200,6 @@ def google_sign_in():
 
     try:
         id_info = client.verify_id_token(id_token, current_app.config['GOOGLE_CLIENT_ID'])
-        print id_info
         if id_info['aud'] != current_app.config['GOOGLE_WEB_CLIENT_ID']:
             raise crypt.AppIdentityError("Unrecognized client.")
         if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
