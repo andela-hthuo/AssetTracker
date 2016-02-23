@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.assets import assets
 from app.models import Asset, User
-from forms import AddAssetForm, AssignAssetForm
+from forms import AddAssetForm, AssignAssetForm, EditAssetForm
 
 
 @assets.before_request
@@ -63,6 +63,41 @@ def add():
         return redirect(url_for('assets.index'))
 
     return render_template('assets/add.html', form=form, heading='Add asset')
+
+
+@assets.route('/<asset_id>/edit', methods=['GET', 'POST'])
+def edit(asset_id):
+    if not current_user.has_admin:
+        return render_template('error/generic.html',
+                               message="Only admins can add assets")
+
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
+    form = EditAssetForm(asset_id=asset.id)
+
+    if form.validate_on_submit():
+        asset.name = form.name.data
+        asset.type = form.type.data
+        asset.description = form.description.data
+        asset.serial_no = form.serial_no.data
+        asset.code = form.code.data
+        asset.purchased = form.purchased.data
+        db.session.add(asset)
+        db.session.commit()
+        flash("Asset saved", "success")
+        return redirect(url_for('assets.index'))
+
+    if request.method == 'GET':
+        form.name.data = asset.name
+        form.type.data = asset.type
+        form.description.data = asset.description
+        form.serial_no.data = asset.serial_no
+        form.code.data = asset.code
+        form.purchased.data = asset.purchased
+
+    return render_template('assets/edit.html',
+                           form=form,
+                           heading='Edit asset',
+                           asset_id=asset.id)
 
 
 @assets.route('/<asset_id>/assign', methods=['GET', 'POST'])
