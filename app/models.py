@@ -119,7 +119,7 @@ class Role(db.Model):
 
 class Invitation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    token = db.Column(db.String(20), unique=True)
+    token = db.Column(db.String(32), unique=True)
     invitee = db.Column(db.String(255))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
