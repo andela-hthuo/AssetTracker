@@ -13,6 +13,7 @@ from app import login_manager, db, mail
 from app.models import User, Role, Invitation, GoogleUser
 from app.auth import auth
 from app.auth.forms import LoginForm, SignUpForm, InviteForm
+from app.helpers import send_email, random_base64
 
 
 @login_manager.user_loader
@@ -98,7 +99,7 @@ def invite_user():
                          if role.level > current_user.roles[0].level]
     if form.validate_on_submit():
         # the method is POST and the form is valid
-        token = base64.urlsafe_b64encode(os.urandom(24))
+        token = random_base64(lambda t: Invitation.get(t) is None)
         invitation = Invitation(
             token,
             form.email.data,
@@ -110,17 +111,17 @@ def invite_user():
         invite_link = url_for('auth.signup', _external=True, invite=token)
 
         # prepare and send invitation email
-        msg = Message(
-            "Asset Tracker Invitation",
-            sender=(current_user.name, current_user.email),
-            recipients=[form.email.data])
-        msg.body = "You've been invited to join Asset Tracker. Follow \
-            this link to sign up: %s" % invite_link
-        msg.html = "You've been invited to join Asset Tracker. Follow \
-            this link to sign up:<br> <a href=\"%s\">%s</a>" % \
-            (invite_link, invite_link)
         try:
-            mail.send(msg)
+            send_email(
+                subject="Asset Tracker Invitation",
+                sender=(current_user.name, current_user.email),
+                recipients=[form.email.data],
+                body="You've been invited to join Asset Tracker. Follow \
+                    this link to sign up: %s" % invite_link,
+                html="You've been invited to join Asset Tracker. Follow \
+                    this link to sign up:<br> <a href=\"%s\">%s</a>" % \
+                (invite_link, invite_link)
+            )
             db.session.add(invitation)
             db.session.commit()
             flash("Invitation sent to %s" % form.email.data, 'success')
@@ -211,7 +212,6 @@ def google_sign_in():
         flash("Invalid Google sign in token for ", "danger")
         return redirect(url_for('auth.login', next=request.args.get('next'))), 400
 
-    # todo: check if email is in use
     google_id = id_info['sub']
     google_user = GoogleUser.query.filter_by(google_id=google_id).first()
     if not google_user:
