@@ -197,3 +197,17 @@ class Asset(db.Model):
     def return_date_near(self):
         delta = self.return_date - datetime.now()
         return not self.return_date_past and delta.days <= 2
+
+
+class PasswordResetRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(32), unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    time = db.Column(db.DateTime)
+    used = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', foreign_keys=user_id)
+
+    def __init__(self, token, user):
+        self.token = token
+        self.user = user
+        self.time = datetime.now()
