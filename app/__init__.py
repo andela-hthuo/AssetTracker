@@ -5,15 +5,17 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_wtf.csrf import CsrfProtect
 
+from config import config
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 mail = Mail()
 csrf = CsrfProtect()
 
 
-def create_app(config_object):
+def create_app(config_name):
     app = Flask(__name__)
-    app.config.from_object(config_object)
+    app.config.from_object(config.get(config_name) or config.get('default'))
 
     db.init_app(app)
     login_manager.init_app(app)
