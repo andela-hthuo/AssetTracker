@@ -36,7 +36,7 @@ Run `pip install -r requirements` to install packages required by the app. To ke
 Set the following environment variables required by the app:
 
  * `MAIL_USERNAME` and `MAIL_PASSWORD`: SMTP username and password for sending emails. The SMTP Server is set in `config.py` which is where you should edit if want to change it from GMail.
- * `APP_CONFIG`: use `config.DevelopmentConfig` for a development deployment. Other options are `config.ProductionConfig` and `config.StagingConfig`
+ * `APP_ENV`: use `development` for a development configuration. Other options are `production` and `staging`. Not setting this variable will default to a development configuration.
  * `DATABASE_URL`: A database url in the format `postgresql://<username>:<password>@<host>/<database name>` e.g `postgresql://user:lion@localhost/asset_tracker`
  * `GOOGLE_CLIENT_ID`: To ensure _Sign in with Google_ works. You need a Google API project to obtain a client id.
  * `GOOGLE_WEB_CLIENT_ID`: Also, to ensure _Sign in with Google_ works.

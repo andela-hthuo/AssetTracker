@@ -20,7 +20,6 @@ class ProductionConfig(Config):
 
 
 class StagingConfig(Config):
-    DEVELOPMENT = True
     DEBUG = True
 
 
@@ -32,3 +31,11 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+
+config = {
+    'development': DevelopmentConfig,
+    'staging': StagingConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
+}
