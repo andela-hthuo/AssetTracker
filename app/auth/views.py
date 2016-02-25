@@ -1,18 +1,17 @@
-import base64
-import os
 import json
+from datetime import datetime
 
 from flask import render_template, redirect, url_for, flash, request, \
     current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from flask_mail import Message
 from oauth2client import client, crypt
 
 
-from app import login_manager, db, mail
-from app.models import User, Role, Invitation, GoogleUser
+from app import login_manager, db
+from app.models import User, Role, Invitation, GoogleUser, PasswordResetRequest
 from app.auth import auth
-from app.auth.forms import LoginForm, SignUpForm, InviteForm
+from app.auth.forms import LoginForm, SignUpForm, InviteForm, \
+    PasswordResetForm, PasswordResetRequestForm
 from app.helpers import send_email, random_base64
 
 
@@ -236,3 +235,85 @@ def google_sign_in():
     return json.dumps({
         'redirect': url_for('index')
     })
+
+
+@auth.route('/password_reset', methods=['GET', 'POST'])
+def password_reset_request():
+    if current_user.is_authenticated:
+        flash("You're already logged in", "info")
+        return redirect(url_for('index'))
+
+    form = PasswordResetRequestForm()
+    if form.validate_on_submit():
+        def accept(t):
+            return PasswordResetRequest.query.filter_by(token=t).first() is None
+        token = random_base64(accept)
+        reset_link = url_for('auth.password_reset', _external=True, token=token)
+        try:
+            send_email(
+                subject="Reset your Asset Tracker Password",
+                sender=form.email.data,
+                recipients=[form.email.data],
+                body="Asset Tracker password reset link: %s\r\n\r\n\
+                     This link will expire in 24 hours" % reset_link,
+                html="Asset Tracker password reset link:<br> <a href=\"%s\">\
+                     %s</a> <br><br>This link will expire in 24 hours" %
+                     (reset_link, reset_link)
+            )
+            entry = PasswordResetRequest(
+                token,
+                User.query.filter_by(email=form.email.data).first()
+            )
+            db.session.add(entry)
+            db.session.commit()
+            flash("A link to reset your password has been sent to %s" %
+                  form.email.data, "success")
+
+        except Exception, e:
+            if current_app.config.get('DEBUG'):
+                raise e
+            else:
+                flash("Failed to send invite due to a %s error"
+                      % e.__class__.__name__, 'danger')
+
+    return render_template("auth/password_request_request.html",
+                           form=form,
+                           heading="Send password reset link")
+
+
+@auth.route('/password_reset/<token>', methods=['GET', 'POST'])
+def password_reset(token=None):
+    if current_user.is_authenticated:
+        flash("You're already logged in", "info")
+        return redirect(url_for('index'))
+
+    reset_request = PasswordResetRequest.query.filter_by(token=token).first()
+    if (reset_request is None) or reset_request.used:
+        flash("Invalid password reset link", "danger")
+        return redirect(url_for('.password_reset_request'))
+
+    form = PasswordResetForm()
+    if form.validate_on_submit():
+        delta = datetime.now() - reset_request.time
+        if delta.days > 0:
+            flash("Trying to use expired password reset token", "danger")
+            return redirect(url_for('.password_reset_request'))
+
+        user = reset_request.user
+        if user.email != form.email.data:
+            flash("Email doesn't match password reset link", "danger")
+            return render_template("auth/password_reset.html",
+                                   form=form,
+                                   token=token)
+
+        user.set_password(form.password.data)
+        reset_request.used = True
+        db.session.add_all([user, reset_request])
+        db.session.commit()
+        flash("Your password has been changed", "success")
+        return redirect(url_for('.login'))
+
+    return render_template("auth/password_reset.html",
+                           form=form,
+                           token=token)
+
