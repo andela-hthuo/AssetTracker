@@ -13,6 +13,8 @@ class Config(object):
     MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
     GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
     GOOGLE_WEB_CLIENT_ID = os.environ['GOOGLE_WEB_CLIENT_ID']
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'uploads')
 
 
 class ProductionConfig(Config):

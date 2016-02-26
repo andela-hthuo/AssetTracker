@@ -8,7 +8,9 @@
     <div class="panel-body panel-users-body">
         {% for user in role.users %}
             <div class="col-md-12">
-                <img src="{{ user.profile_pic_url or url_for('static', filename='profile_pic.png') }}" class="pull-left profile-pic" width="36" height="36"/>
+                <div class="profile-pic-wrapper pull-left">
+                    <img src="{{ user.profile_pic_url or url_for('static', filename='profile_pic.png') }}" class="pull-left profile-pic" width="36" height="36"/>
+                </div>
                 <div><a href="{{ url_for('account.show', user_id=user.id) }}">{{ user.name }}</a></div>
                 <div><a href="mailto:{{ user.email }}">{{ user.email }}</a></div>
             </div>

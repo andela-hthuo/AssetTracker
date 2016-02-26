@@ -8,7 +8,7 @@
             </div>
             {% if user.id == current_user.id %}
             <div class="col-md-3">
-                <a class="btn btn-primary" href="#">Edit</a>
+                <a class="btn btn-primary" href="{{ url_for('account.edit') }}">Edit</a>
             </div>
             {% endif %}
             <div class="col-md-12">
@@ -18,7 +18,9 @@
         <div class="col-md-12">
             <div class="col-md-4">Name:</div>
             <div class="col-md-8">
-                <img src="{{user.profile_pic_url or url_for('static', filename='profile_pic.png')}}" class="pull-left profile-pic" width="64" height="64"/>
+                <div class="profile-pic-wrapper pull-left">
+                    <img src="{{user.profile_pic_url or url_for('static', filename='profile_pic.png')}}" class="profile-pic" width="64" height="64"/>
+                </div>
                 <div><strong>{{ user.name }}</strong></div>
                 <div><strong>{{ user.email }}</strong></div>
             </div>
