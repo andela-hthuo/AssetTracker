@@ -9,7 +9,7 @@ from oauth2client import client, crypt
 
 from app import login_manager, db
 from app.models import User, Role, Invitation, GoogleUser, PasswordResetRequest
-from app.auth import auth
+from app.auth import auth, guest_required, role_required
 from app.auth.forms import LoginForm, SignUpForm, InviteForm, \
     PasswordResetForm, PasswordResetRequestForm
 from app.helpers import send_email, random_base64
@@ -85,13 +85,8 @@ def users():
 
 
 @auth.route('/users/invite', methods=['GET', 'POST'])
-@login_required
+@role_required('admin')
 def invite_user():
-    # only admins can send invites
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can send invites")
-
     form = InviteForm()
     # users can only add users one privilege level below them
     form.role.choices = [(role.id, role.title) for role in Role.query.all()
@@ -138,12 +133,8 @@ def invite_user():
 
 
 @auth.route('/users/signup', methods=['GET', 'POST'])
+@guest_required
 def signup():
-    # if there's a user logged in, no need to continue with sign up
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     form = SignUpForm()
     token = request.args.get('invite')
     invite = Invitation.get(token)
@@ -187,12 +178,8 @@ def signup():
 
 
 @auth.route('/oauth/google', methods=['GET', 'POST'])
+@guest_required
 def google_sign_in():
-    # if there's a user logged in, no need to continue with log in
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     id_token = request.form.get('id_token')
     if not id_token:
         flash("Invalid Google sign in token", "danger")
@@ -238,11 +225,8 @@ def google_sign_in():
 
 
 @auth.route('/password_reset', methods=['GET', 'POST'])
+@guest_required
 def password_reset_request():
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
         def accept(t):
@@ -282,11 +266,8 @@ def password_reset_request():
 
 
 @auth.route('/password_reset/<token>', methods=['GET', 'POST'])
+@guest_required
 def password_reset(token=None):
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     reset_request = PasswordResetRequest.query.filter_by(token=token).first()
     if (reset_request is None) or reset_request.used:
         flash("Invalid password reset link", "danger")

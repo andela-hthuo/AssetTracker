@@ -2,8 +2,9 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 
 from app import db
-from app.assets import assets
 from app.models import Asset, User
+from app.auth import role_required
+from app.assets import assets
 from forms import AddAssetForm, AssignAssetForm, EditAssetForm
 
 
@@ -41,10 +42,8 @@ def index():
 
 
 @assets.route('/add', methods=['GET', 'POST'])
+@role_required('admin')
 def add():
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can add assets")
 
     form = AddAssetForm()
     if form.validate_on_submit():
@@ -66,11 +65,8 @@ def add():
 
 
 @assets.route('/<asset_id>/edit', methods=['GET', 'POST'])
+@role_required('admin')
 def edit(asset_id):
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can add assets")
-
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     form = EditAssetForm(asset_id=asset.id)
 
@@ -101,11 +97,8 @@ def edit(asset_id):
 
 
 @assets.route('/<asset_id>/assign', methods=['GET', 'POST'])
+@role_required('admin')
 def assign(asset_id):
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can assign assets")
-
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if asset.is_assigned:
         return render_template('error/generic.html',
@@ -133,11 +126,8 @@ def assign(asset_id):
 
 
 @assets.route('/<asset_id>/reclaim', methods=['POST'])
+@role_required('admin')
 def reclaim(asset_id):
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can reclaim assets")
-
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     # copy the name 'cause assignee will be removed
     name = asset.assignee.name[:]
