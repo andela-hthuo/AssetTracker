@@ -225,7 +225,6 @@ def google_sign_in():
 
 
 @auth.route('/password_reset', methods=['GET', 'POST'])
-@guest_required
 def password_reset_request():
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
@@ -259,6 +258,9 @@ def password_reset_request():
             else:
                 flash("Failed to send invite due to a %s error"
                       % e.__class__.__name__, 'danger')
+
+    if request.method == 'GET' and current_user.is_authenticated:
+        form.email.data = current_user.email
 
     return render_template("auth/password_request_request.html",
                            form=form,
