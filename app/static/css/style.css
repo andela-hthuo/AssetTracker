@@ -2,10 +2,27 @@ body {
     background-color: #F8F8F8;
     margin-bottom: 70px
 }
-.panel-asset-body > div{
+.panel-users-body > div,
+.panel-asset-body > div {
     padding-top: 0.25em;
     padding-bottom: 0.25em;
 }
 .inline-block {
     display: inline-block;
+}
+.panel-account-body > div{
+    padding-bottom: 2em;
+}
+.profile-pic-wrapper {
+    max-height: 64px;
+    overflow: hidden;
+    border-radius: .4em;
+    display: inline-block;
+    margin-right: 1em;
+}
+.panel-users-body .profile-pic-wrapper {
+    max-height: 32px;
+}
+.profile-pic {
+    height: auto;
 }

@@ -78,12 +78,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-@auth.route('/users/')
-@login_required
-def users():
-    return render_template('auth/users.html', roles=Role.query.all())
-
-
 @auth.route('/users/invite', methods=['GET', 'POST'])
 @role_required('admin')
 def invite_user():

@@ -39,7 +39,7 @@
                 {% else %}
                 <li><a href="{{ url_for('assets.index') }}">Assigned Assets</a></li>
                 {% endif %}
-                <li><a href="{{ url_for('auth.users') }}">Users</a></li>
+                <li><a href="{{ url_for('account.users') }}">Users</a></li>
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -53,6 +53,7 @@
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('account.show') }}">My Profile</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
                     </ul>
                 </li>

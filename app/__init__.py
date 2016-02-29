@@ -25,8 +25,10 @@ def create_app(config_name):
 
     from app.assets import assets as assets_blueprint
     from app.auth import auth as auth_blueprint
+    from app.account import account as account_blueprint
     app.register_blueprint(assets_blueprint, url_prefix='/assets')
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(account_blueprint)
 
     with app.app_context():
         import views
