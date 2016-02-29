@@ -48,12 +48,8 @@ def setup():
 
 
 @auth.route('/login', methods=['GET', 'POST'])
+@guest_required
 def login():
-    # if there's a user logged in, no need to continue with log in
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     form = LoginForm()
     if form.validate_on_submit():
         # the method is POST and the form is valid
