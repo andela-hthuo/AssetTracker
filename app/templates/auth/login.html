@@ -8,5 +8,6 @@
     {{ wtf.form_field(form.email) }}
     {{ wtf.form_field(form.password) }}
     {{ wtf.form_field(form.submit, class='btn btn-primary btn-raised') }}
+    <a class="col-xs-offset-1" href="{{ url_for('.password_reset_request') }}">Forgot password?</a>
 </form>
 {% endblock %}

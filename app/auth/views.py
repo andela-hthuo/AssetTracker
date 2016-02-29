@@ -1,18 +1,18 @@
-import base64
-import os
 import json
+from datetime import datetime
 
 from flask import render_template, redirect, url_for, flash, request, \
     current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from flask_mail import Message
 from oauth2client import client, crypt
 
 
-from app import login_manager, db, mail
-from app.models import User, Role, Invitation, GoogleUser
-from app.auth import auth
-from app.auth.forms import LoginForm, SignUpForm, InviteForm
+from app import login_manager, db
+from app.models import User, Role, Invitation, GoogleUser, PasswordResetRequest
+from app.auth import auth, guest_required, role_required
+from app.auth.forms import LoginForm, SignUpForm, InviteForm, \
+    PasswordResetForm, PasswordResetRequestForm
+from app.helpers import send_email, random_base64
 
 
 @login_manager.user_loader
@@ -78,27 +78,16 @@ def logout():
     return redirect(url_for('index'))
 
 
-@auth.route('/users/')
-@login_required
-def users():
-    return render_template('auth/users.html', roles=Role.query.all())
-
-
 @auth.route('/users/invite', methods=['GET', 'POST'])
-@login_required
+@role_required('admin')
 def invite_user():
-    # only admins can send invites
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can send invites")
-
     form = InviteForm()
     # users can only add users one privilege level below them
     form.role.choices = [(role.id, role.title) for role in Role.query.all()
                          if role.level > current_user.roles[0].level]
     if form.validate_on_submit():
         # the method is POST and the form is valid
-        token = base64.urlsafe_b64encode(os.urandom(24))
+        token = random_base64(lambda t: Invitation.get(t) is None)
         invitation = Invitation(
             token,
             form.email.data,
@@ -110,19 +99,17 @@ def invite_user():
         invite_link = url_for('auth.signup', _external=True, invite=token)
 
         # prepare and send invitation email
-        msg = Message(
-            "Inventory Manager invitation",
-            # this should be sender=current_user.email but if I do that the
-            # smtp email may get blacklisted as a spammer
-            sender=current_app.config.get('MAIL_USERNAME'),
-            recipients=[form.email.data])
-        msg.body = "You've been invited to join Inventory Manager. Follow \
-            this link to sign up: %s" % invite_link
-        msg.html = "You've been invited to join Inventory Manager. Follow \
-            this link to sign up:<br> <a href=\"%s\">%s</a>" % \
-            (invite_link, invite_link)
         try:
-            mail.send(msg)
+            send_email(
+                subject="Asset Tracker Invitation",
+                sender=(current_user.name, current_user.email),
+                recipients=[form.email.data],
+                body="You've been invited to join Asset Tracker. Follow \
+                    this link to sign up: %s" % invite_link,
+                html="You've been invited to join Asset Tracker. Follow \
+                    this link to sign up:<br> <a href=\"%s\">%s</a>" % \
+                (invite_link, invite_link)
+            )
             db.session.add(invitation)
             db.session.commit()
             flash("Invitation sent to %s" % form.email.data, 'success')
@@ -140,12 +127,8 @@ def invite_user():
 
 
 @auth.route('/users/signup', methods=['GET', 'POST'])
+@guest_required
 def signup():
-    # if there's a user logged in, no need to continue with sign up
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     form = SignUpForm()
     token = request.args.get('invite')
     invite = Invitation.get(token)
@@ -189,12 +172,8 @@ def signup():
 
 
 @auth.route('/oauth/google', methods=['GET', 'POST'])
+@guest_required
 def google_sign_in():
-    # if there's a user logged in, no need to continue with log in
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     id_token = request.form.get('id_token')
     if not id_token:
         flash("Invalid Google sign in token", "danger")
@@ -202,7 +181,6 @@ def google_sign_in():
 
     try:
         id_info = client.verify_id_token(id_token, current_app.config['GOOGLE_CLIENT_ID'])
-        print id_info
         if id_info['aud'] != current_app.config['GOOGLE_WEB_CLIENT_ID']:
             raise crypt.AppIdentityError("Unrecognized client.")
         if id_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
@@ -214,7 +192,6 @@ def google_sign_in():
         flash("Invalid Google sign in token for ", "danger")
         return redirect(url_for('auth.login', next=request.args.get('next'))), 400
 
-    # todo: check if email is in use
     google_id = id_info['sub']
     google_user = GoogleUser.query.filter_by(google_id=google_id).first()
     if not google_user:
@@ -239,3 +216,81 @@ def google_sign_in():
     return json.dumps({
         'redirect': url_for('index')
     })
+
+
+@auth.route('/password_reset', methods=['GET', 'POST'])
+def password_reset_request():
+    form = PasswordResetRequestForm()
+    if form.validate_on_submit():
+        def accept(t):
+            return PasswordResetRequest.query.filter_by(token=t).first() is None
+        token = random_base64(accept)
+        reset_link = url_for('auth.password_reset', _external=True, token=token)
+        try:
+            send_email(
+                subject="Reset your Asset Tracker Password",
+                sender=form.email.data,
+                recipients=[form.email.data],
+                body="Asset Tracker password reset link: %s\r\n\r\n\
+                     This link will expire in 24 hours" % reset_link,
+                html="Asset Tracker password reset link:<br> <a href=\"%s\">\
+                     %s</a> <br><br>This link will expire in 24 hours" %
+                     (reset_link, reset_link)
+            )
+            entry = PasswordResetRequest(
+                token,
+                User.query.filter_by(email=form.email.data).first()
+            )
+            db.session.add(entry)
+            db.session.commit()
+            flash("A link to reset your password has been sent to %s" %
+                  form.email.data, "success")
+
+        except Exception, e:
+            if current_app.config.get('DEBUG'):
+                raise e
+            else:
+                flash("Failed to send invite due to a %s error"
+                      % e.__class__.__name__, 'danger')
+
+    if request.method == 'GET' and current_user.is_authenticated:
+        form.email.data = current_user.email
+
+    return render_template("auth/password_request_request.html",
+                           form=form,
+                           heading="Send password reset link")
+
+
+@auth.route('/password_reset/<token>', methods=['GET', 'POST'])
+@guest_required
+def password_reset(token=None):
+    reset_request = PasswordResetRequest.query.filter_by(token=token).first()
+    if (reset_request is None) or reset_request.used:
+        flash("Invalid password reset link", "danger")
+        return redirect(url_for('.password_reset_request'))
+
+    form = PasswordResetForm()
+    if form.validate_on_submit():
+        delta = datetime.now() - reset_request.time
+        if delta.days > 0:
+            flash("Trying to use expired password reset token", "danger")
+            return redirect(url_for('.password_reset_request'))
+
+        user = reset_request.user
+        if user.email != form.email.data:
+            flash("Email doesn't match password reset link", "danger")
+            return render_template("auth/password_reset.html",
+                                   form=form,
+                                   token=token)
+
+        user.set_password(form.password.data)
+        reset_request.used = True
+        db.session.add_all([user, reset_request])
+        db.session.commit()
+        flash("Your password has been changed", "success")
+        return redirect(url_for('.login'))
+
+    return render_template("auth/password_reset.html",
+                           form=form,
+                           token=token)
+

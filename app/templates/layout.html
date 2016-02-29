@@ -1,5 +1,5 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}Asset Manager{% endblock %}
+{% block title %}Asset Tracker{% endblock %}
 {% block styles %}
 {{ super() }}
 <link href="{{ url_for('static', filename='bootstrap-material-design/css/bootstrap-material-design.css') }}" rel="stylesheet">
@@ -18,7 +18,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{ url_for('index') }}">Asset Manager</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">Asset Tracker</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-left">
@@ -39,7 +39,7 @@
                 {% else %}
                 <li><a href="{{ url_for('assets.index') }}">Assigned Assets</a></li>
                 {% endif %}
-                <li><a href="{{ url_for('auth.users') }}">Users</a></li>
+                <li><a href="{{ url_for('account.users') }}">Users</a></li>
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -53,6 +53,7 @@
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('account.show') }}">My Profile</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
                     </ul>
                 </li>

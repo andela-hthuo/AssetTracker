@@ -82,20 +82,20 @@
             {% if asset.is_assigned %}
                 {% if asset.lost %}
                     {% if current_user.has_admin or asset.check_assignee(current_user) %}
-                        <form action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
+                        <form class="inline-block" action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="submit" class="btn btn-primary" value="Report Found">
                         </form>
                     {% endif %}
                 {% else %}
                     {% if asset.check_assignee(current_user) %}
-                    <form action="{{ url_for('assets.report_lost', asset_id=asset.id) }}" method="post">
+                    <form class="inline-block" action="{{ url_for('assets.report_lost', asset_id=asset.id) }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="submit" class="btn btn-primary" value="Report Lost">
                     </form>
                     {% endif %}
                     {% if current_user.has_admin %}
-                    <form action="{{ url_for('assets.reclaim', asset_id=asset.id) }}" method="post">
+                    <form class="inline-block" action="{{ url_for('assets.reclaim', asset_id=asset.id) }}" method="post">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="submit" class="btn btn-primary" value="Reclaim">
                     </form>
@@ -103,6 +103,9 @@
                 {% endif %}
             {% elif current_user.has_admin %}
                 <a class="btn btn-primary" href="{{ url_for('assets.assign', asset_id=asset.id) }}">Assign</a>
+            {% endif %}
+            {% if current_user.has_admin %}
+                <a class="btn btn-primary" href="{{ url_for('assets.edit', asset_id=asset.id) }}">Edit</a>
             {% endif %}
         </div>
     </div>

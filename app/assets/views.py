@@ -2,9 +2,10 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 
 from app import db
-from app.assets import assets
 from app.models import Asset, User
-from forms import AddAssetForm, AssignAssetForm
+from app.auth import role_required
+from app.assets import assets
+from forms import AddAssetForm, AssignAssetForm, EditAssetForm
 
 
 @assets.before_request
@@ -41,10 +42,8 @@ def index():
 
 
 @assets.route('/add', methods=['GET', 'POST'])
+@role_required('admin')
 def add():
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can add assets")
 
     form = AddAssetForm()
     if form.validate_on_submit():
@@ -65,12 +64,41 @@ def add():
     return render_template('assets/add.html', form=form, heading='Add asset')
 
 
-@assets.route('/<asset_id>/assign', methods=['GET', 'POST'])
-def assign(asset_id):
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can assign assets")
+@assets.route('/<asset_id>/edit', methods=['GET', 'POST'])
+@role_required('admin')
+def edit(asset_id):
+    asset = Asset.query.filter_by(id=asset_id).first_or_404()
+    form = EditAssetForm(asset_id=asset.id)
 
+    if form.validate_on_submit():
+        asset.name = form.name.data
+        asset.type = form.type.data
+        asset.description = form.description.data
+        asset.serial_no = form.serial_no.data
+        asset.code = form.code.data
+        asset.purchased = form.purchased.data
+        db.session.add(asset)
+        db.session.commit()
+        flash("Asset saved", "success")
+        return redirect(url_for('assets.index'))
+
+    if request.method == 'GET':
+        form.name.data = asset.name
+        form.type.data = asset.type
+        form.description.data = asset.description
+        form.serial_no.data = asset.serial_no
+        form.code.data = asset.code
+        form.purchased.data = asset.purchased
+
+    return render_template('assets/edit.html',
+                           form=form,
+                           heading='Edit asset',
+                           asset_id=asset.id)
+
+
+@assets.route('/<asset_id>/assign', methods=['GET', 'POST'])
+@role_required('admin')
+def assign(asset_id):
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     if asset.is_assigned:
         return render_template('error/generic.html',
@@ -98,11 +126,8 @@ def assign(asset_id):
 
 
 @assets.route('/<asset_id>/reclaim', methods=['POST'])
+@role_required('admin')
 def reclaim(asset_id):
-    if not current_user.has_admin:
-        return render_template('error/generic.html',
-                               message="Only admins can reclaim assets")
-
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
     # copy the name 'cause assignee will be removed
     name = asset.assignee.name[:]

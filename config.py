@@ -6,13 +6,15 @@ class Config(object):
     SECRET_KEY = 'kSec2e+iZlgjjKChKdUY5Iw0kurzjsGX'
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp.mailgun.org'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ['MAIL_USERNAME']
     MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
     GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
     GOOGLE_WEB_CLIENT_ID = os.environ['GOOGLE_WEB_CLIENT_ID']
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                 'uploads')
 
 
 class ProductionConfig(Config):
@@ -20,7 +22,6 @@ class ProductionConfig(Config):
 
 
 class StagingConfig(Config):
-    DEVELOPMENT = True
     DEBUG = True
 
 
@@ -32,3 +33,11 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+
+config = {
+    'development': DevelopmentConfig,
+    'staging': StagingConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
+}

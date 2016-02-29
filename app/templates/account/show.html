@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block inner_content %}
+<div class="panel panel-default">
+    <div class="panel-body panel-account-body">
+        <div class="col-md-12">
+            <div class="col-md-9">
+                <h3><b>Account information</b></h3>
+            </div>
+            {% if user.id == current_user.id %}
+            <div class="col-md-3">
+                <a class="btn btn-primary" href="{{ url_for('account.edit') }}">Edit</a>
+            </div>
+            {% endif %}
+            <div class="col-md-12">
+                <hr>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Name:</div>
+            <div class="col-md-8">
+                <div class="profile-pic-wrapper pull-left">
+                    <img src="{{user.profile_pic_url or url_for('static', filename='profile_pic.png')}}" class="profile-pic" width="64" height="64"/>
+                </div>
+                <div><strong>{{ user.name }}</strong></div>
+                <div><strong>{{ user.email }}</strong></div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Account type:</div>
+            <div class="col-md-8"><strong>{{ user.roles[0].title }}</strong></div>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-4">Password:</div>
+            <div class="col-md-8"><a href="{{ url_for('auth.password_reset_request') }}">Reset password</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
