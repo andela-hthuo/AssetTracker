@@ -22,7 +22,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return render_template('error/401.html'), 401
+    return redirect(url_for('auth.login', next=request.path))
 
 
 @auth.route('/setup', methods=['GET', 'POST'])
