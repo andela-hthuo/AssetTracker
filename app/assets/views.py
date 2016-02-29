@@ -17,34 +17,44 @@ def before_request():
 @assets.route('/')
 def index():
     if current_user.has_admin:
-        query = Asset.query.order_by(Asset.id.desc())
-        filter_by = request.args.get('filter_by')
-        if filter_by == 'assigned':
-            viewable_assets = [asset for asset in query.all()
-                               if asset.is_assigned]
-            heading = 'Assigned Assets'
-        elif filter_by == 'unassigned':
-            viewable_assets = [asset for asset in query.all()
-                               if not asset.is_assigned]
-            heading = 'Unassigned Assets'
-        elif filter_by == 'lost':
-            viewable_assets = [asset for asset in query.all()
-                               if asset.lost]
-            heading = 'Assets Reported Lost'
-        else:
-            viewable_assets = query.all()
-            heading = 'All Assets'
+        return redirect(url_for('.admin'))
     else:
-        viewable_assets = current_user.assets_assigned
-        heading = 'Assigned Assets'
-    return render_template('assets/index.html', assets=viewable_assets,
+        return redirect(url_for('.mine'))
+
+
+@assets.route('/assigned_to_me')
+def mine():
+    _assets = current_user.assets_assigned
+    heading = 'Assets assigned to you'
+    return render_template('assets/index.html', assets=_assets,
+                           heading=heading)
+
+
+@assets.route('/admin/')
+@assets.route('/admin/<filter_by>')
+@role_required('admin')
+def admin(filter_by=None):
+    query = Asset.query.order_by(Asset.id.desc())
+    if filter_by == 'assigned':
+        _assets = [asset for asset in query.all() if asset.is_assigned]
+        heading = 'Assigned assets'
+    elif filter_by == 'available':
+        _assets = [asset for asset in query.all() if not asset.is_assigned]
+        heading = 'Available assets'
+    elif filter_by == 'lost':
+        _assets = [asset for asset in query.all() if asset.lost]
+        heading = 'Lost assets'
+    else:
+        _assets = query.all()
+        heading = 'Assets'
+
+    return render_template('assets/index.html', assets=_assets,
                            heading=heading)
 
 
 @assets.route('/add', methods=['GET', 'POST'])
 @role_required('admin')
 def add():
-
     form = AddAssetForm()
     if form.validate_on_submit():
         asset = Asset(
@@ -156,7 +166,6 @@ def report_lost(asset_id):
 
 @assets.route('/<asset_id>/report/found', methods=['POST'])
 def report_found(asset_id):
-
     asset = Asset.query.filter_by(id=asset_id).first_or_404()
 
     if current_user.has_admin or asset.check_assignee(current_user):
@@ -175,4 +184,3 @@ def report_found(asset_id):
         'error/generic.html',
         message="Only admins or the assigned user can mark assets found"
     )
-
