@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request, \
     current_app
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app import csrf
 from models import User, Asset
 
@@ -31,6 +31,8 @@ def before_request():
 @current_app.route('/')
 @login_required
 def index():
+    if not current_user.has_admin:
+        return redirect(url_for('assets.mine'))
     all_users = User.query.all()
     all_assets = Asset.query.all()
     summary = {

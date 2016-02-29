@@ -42,10 +42,10 @@
                         <li><a href="{{ url_for('assets.admin', filter_by='lost') }}">Lost</a></li>
                     </ul>
                 </li>
+                <li><a href="{{ url_for('account.users') }}">Users</a></li>
                 {% else %}
                 <li><a href="{{ url_for('assets.mine') }}">Assets assigned to you</a></li>
                 {% endif %}
-                <li><a href="{{ url_for('account.users') }}">Users</a></li>
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
