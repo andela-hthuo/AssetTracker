@@ -60,7 +60,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('account.show') }}">My Profile</a></li>
-                        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}" id="logout">Logout</a></li>
                     </ul>
                 </li>
                 {% else %}
@@ -96,4 +96,20 @@
 <script>
     $.material.init()
 </script>
+{% if current_user.is_authenticated and current_user.google_id %}
+<script src="https://apis.google.com/js/platform.js"></script>
+<script>
+    gapi.load('auth2', function() {
+        gapi.auth2.init({
+            client_id: "370172739877-8vmqlv4che8ecbjkivbpncm1c7a13e3c.apps.googleusercontent.com"
+        });
+    });
+    $('#logout').click(function(e) {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+            console.log('User signed out.');
+        });
+    });
+</script>
+{% endif %}
 {% endblock %}
