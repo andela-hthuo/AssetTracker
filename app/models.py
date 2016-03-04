@@ -1,7 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, \
-     check_password_hash
-from flask_login import UserMixin
+    check_password_hash
+from flask_login import UserMixin, current_user
 from app import db
 
 roles = db.Table(
@@ -187,16 +187,39 @@ class Asset(db.Model):
 
     @property
     def return_date_(self):
-        return self.return_date.strftime("%d, %b %Y")
+        return self.return_date and self.return_date.strftime("%d, %b %Y")
 
     @property
     def return_date_past(self):
-        return datetime.now() > self.return_date
+        return self.return_date and datetime.now() > self.return_date
 
     @property
     def return_date_near(self):
+        if not self.return_date:
+            return None
         delta = self.return_date - datetime.now()
         return not self.return_date_past and delta.days <= 2
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'type': self.type,
+            'description': self.description,
+            'serial_no': self.serial_no,
+            'code': self.code,
+            'purchased_date': self.purchased_date,
+            'return_date_': self.return_date_,
+            'lost': self.lost,
+            'is_assigned': self.is_assigned,
+            'assignee': self.assignee and self.assignee.name,
+            'return_date_past': self.return_date_past,
+            'return_date_near': self.return_date_near,
+            'is_mine': self.check_assignee(current_user),
+            'added_by': self.added_by.name,
+        }
 
 
 class PasswordResetRequest(db.Model):

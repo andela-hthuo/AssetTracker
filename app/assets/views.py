@@ -1,3 +1,5 @@
+import json
+
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 
@@ -26,6 +28,10 @@ def index():
 def mine():
     _assets = current_user.assets_assigned
     heading = 'Assets assigned to you'
+
+    if request.args.get('accept') == 'json':
+        return json.dumps([i.serialize for i in _assets])
+
     return render_template('assets/index.html', assets=_assets,
                            heading=heading)
 
@@ -47,6 +53,9 @@ def admin(filter_by=None):
     else:
         _assets = query.all()
         heading = 'Assets'
+
+    if request.args.get('accept') == 'json':
+        return json.dumps([i.serialize for i in _assets])
 
     return render_template('assets/index.html', assets=_assets,
                            heading=heading)
