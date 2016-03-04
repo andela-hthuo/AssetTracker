@@ -13,7 +13,7 @@
             <div class="form-group">
                 <label class="sr-only" for="inputSearch">Search</label>
                 <input type="text" class="form-control" id="inputSearch" placeholder="Search" ng-model="query">
-                <input type="hidden" id="assetsUrl" ng-model="assetsUrl" value="{{ url_for(request.endpoint, accept='json') }}">
+                <input type="hidden" id="assetsUrl" ng-model="assetsUrl" value="{{ url_for(request.endpoint, accept='json', **request.view_args) }}">
             </div>
       </form>
     </div>

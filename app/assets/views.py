@@ -45,7 +45,7 @@ def admin(filter_by=None):
         _assets = [asset for asset in query.all() if asset.is_assigned]
         heading = 'Assigned assets'
     elif filter_by == 'available':
-        _assets = [asset for asset in query.all() if not asset.is_assigned]
+        _assets = [asset for asset in query.all() if not asset.is_assigned and not asset.lost]
         heading = 'Available assets'
     elif filter_by == 'lost':
         _assets = [asset for asset in query.all() if asset.lost]
