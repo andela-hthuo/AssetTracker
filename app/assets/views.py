@@ -123,6 +123,10 @@ def assign(asset_id):
         return render_template('error/generic.html',
                                message="This asset is already assigned to %s"
                                        % asset.assignee.name)
+    if asset.lost:
+        return render_template('error/generic.html',
+                               message="This asset is lost therefore can't\
+                               be assigned")
 
     form = AssignAssetForm()
     form.user.choices = [(user.id, "%s &lt;%s&gt;" % (user.name, user.email))

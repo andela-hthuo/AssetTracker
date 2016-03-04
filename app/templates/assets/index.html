@@ -78,7 +78,7 @@
         </div>
         <div class="col-md-12">
             {% set assets_url = url_for('assets.index') %}
-            <form ng-if="asset.is_assigned && asset.lost && ({{ has_admin() }} || asset.is_mine)" class="inline-block" action="[['{{assets_url}}' + asset.id + '/report/found']]" method="post">
+            <form ng-if="asset.lost && ({{ has_admin() }} || asset.is_mine)" class="inline-block" action="[['{{assets_url}}' + asset.id + '/report/found']]" method="post">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="submit" class="btn btn-primary" value="Report Found">
             </form>
@@ -90,7 +90,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="submit" class="btn btn-primary" value="Reclaim">
             </form>
-            <a ng-if="!asset.is_assigned && {{ has_admin() }}" class="btn btn-primary" href="[['{{assets_url}}' + asset.id + '/assign']]">Assign</a>
+            <a ng-if="!asset.is_assigned && !asset.lost && {{ has_admin() }}" class="btn btn-primary" href="[['{{assets_url}}' + asset.id + '/assign']]">Assign</a>
             <a ng-if="{{ has_admin() }}" class="btn btn-primary" href="[['{{assets_url}}' + asset.id + '/edit']]">Edit</a>
         </div>
     </div>
