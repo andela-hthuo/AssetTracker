@@ -26,3 +26,12 @@ body {
 .profile-pic {
     height: auto;
 }
+.form-search {
+    width: 100%;
+}
+.form-search .form-group,
+.form-search .form-control {
+    margin: 5px 0;
+    padding: 0;
+    width: 100%;
+}

@@ -22,7 +22,7 @@ def load_user(user_id):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return render_template('error/401.html'), 401
+    return redirect(url_for('auth.login', next=request.path))
 
 
 @auth.route('/setup', methods=['GET', 'POST'])
@@ -48,12 +48,8 @@ def setup():
 
 
 @auth.route('/login', methods=['GET', 'POST'])
+@guest_required
 def login():
-    # if there's a user logged in, no need to continue with log in
-    if current_user.is_authenticated:
-        flash("You're already logged in", "info")
-        return redirect(url_for('index'))
-
     form = LoginForm()
     if form.validate_on_submit():
         # the method is POST and the form is valid
@@ -79,6 +75,12 @@ def logout():
 
 
 @auth.route('/users/invite', methods=['GET', 'POST'])
+@role_required('admin')
+def invite_user_old():
+    return redirect(url_for('.invite_user'))
+
+
+@auth.route('/invite', methods=['GET', 'POST'])
 @role_required('admin')
 def invite_user():
     form = InviteForm()
@@ -127,6 +129,12 @@ def invite_user():
 
 
 @auth.route('/users/signup', methods=['GET', 'POST'])
+@guest_required
+def signup_old():
+    return redirect(url_for('.signup', **request.args))
+
+
+@auth.route('/signup', methods=['GET', 'POST'])
 @guest_required
 def signup():
     form = SignUpForm()

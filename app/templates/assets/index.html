@@ -1,17 +1,29 @@
 {% extends "layout.html" %}
+{% macro has_admin() -%}
+    {{'true' if current_user.has_admin else 'false'}}
+{%- endmacro %}
 {% block inner_content %}
-{% if current_user.has_admin %}
-<p>
-    <a href="{{ url_for('assets.add') }}" class="btn btn-primary btn-raised">Add Asset</a>
-</p>
-{% endif %}
-{% for asset in assets %}
-<div class="panel panel-primary">
+<div id="assets-app" ng-controller="AssetsController">
+<div class="row">
+    <div class="col-md-4" ng-show="{{ has_admin() }}">
+        <a href="{{ url_for('assets.add') }}" class="btn btn-primary btn-raised">Add Asset</a>
+    </div>
+    <div class="col-md-{{'8' if current_user.has_admin else '12'}}">
+        <form class="form-inline form-search">
+            <div class="form-group">
+                <label class="sr-only" for="inputSearch">Search</label>
+                <input type="text" class="form-control" id="inputSearch" placeholder="Search" ng-model="query">
+                <input type="hidden" id="assetsUrl" ng-model="assetsUrl" value="{{ url_for(request.endpoint, accept='json') }}">
+            </div>
+      </form>
+    </div>
+</div>
+<div class="panel panel-primary" ng-repeat="asset in assets | filter:query">
     <div class="panel-heading">
         <div class="col-md-12">
             <div class="col-md-4">Name:</div>
             <div class="col-md-8">
-                <big><strong>{{ asset.name }}</strong></big>
+                <big><strong>[[asset.name]]</strong></big>
             </div>
         </div>
         <div class="clearfix"></div>
@@ -19,98 +31,82 @@
     <div class="panel-body  panel-asset-body">
         <div class="col-md-12">
             <div class="col-md-4">Type:</div>
-            <div class="col-md-8"><strong>{{ asset.type }}</strong></div>
+            <div class="col-md-8"><strong>[[asset.type]]</strong></div>
         </div>
         <div class="col-md-12">
             <div class="col-md-4">Serial Number:</div>
-            <div class="col-md-8"><strong>{{ asset.serial_no }}</strong></div>
+            <div class="col-md-8"><strong>[[asset.serial_no]]</strong></div>
         </div>
         <div class="col-md-12">
             <div class="col-md-4">Andela Serial Code:</div>
-            <div class="col-md-8"><strong>{{ asset.code }}</strong></div>
+            <div class="col-md-8"><strong>[[asset.code]]</strong></div>
         </div>
         <div class="col-md-12">
             <div class="col-md-4">Description:</div>
-            <div class="col-md-8"><strong>{{ asset.description }}</strong></div>
+            <div class="col-md-8"><strong>[[asset.description]]</strong></div>
         </div>
-        {% if current_user.has_admin %}
-            <div class="col-md-12">
-                <div class="col-md-4">Date of purchase:</div>
-                <div class="col-md-8"><strong>{{ asset.purchased_date }}</strong></div>
-            </div>
-            <div class="col-md-12">
-                <div class="col-md-4">Added by:</div>
-                <div class="col-md-8"><strong>{{ asset.added_by.name }}</strong></div>
-            </div>
-        {% endif %}
-        {% if asset.is_assigned %}
-            <div class="col-md-12">
-                <hr>
-            </div>
-            {% if asset.check_assignee(current_user) or current_user.has_admin %}
-            <div class="col-md-12">
-                <div class="col-md-4">Return date:</div>
-                <div class="col-md-8">
-                    <strong>{{ asset.return_date_ }}</strong>
-                    {% if asset.return_date_past %}
-                        <span style="color:red;">(Item should have been returned already)</span>
-                    {% endif %}
-                    {% if asset.return_date_near %}
-                        <span style="color:orange;">(Item return date is close)</span>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-            {% if current_user.has_admin %}
-                <div class="col-md-12">
-                    <div class="col-md-4">Assigned to:</div>
-                    <div class="col-md-8"><strong>{{ asset.assignee.name }}</strong></div>
-                </div>
-            {% endif %}
-        {% endif %}
-        {% if asset.lost %}
-            <div class="col-md-12">
-                <div class="col-md-4">Lost:</div>
-                <div class="col-md-8">
-                    <big style="color:red;">
-                        <strong>LOST</strong>
-                    </big>
-                </div>
-            </div>
-        {% endif %}
+        <div class="col-md-12" ng-if="{{ has_admin() }}">
+            <div class="col-md-4">Date of purchase:</div>
+            <div class="col-md-8"><strong>[[asset.purchased_date]]</strong></div>
+        </div>
         <div class="col-md-12">
-            {% if asset.is_assigned %}
-                {% if asset.lost %}
-                    {% if current_user.has_admin or asset.check_assignee(current_user) %}
-                        <form class="inline-block" action="{{ url_for('assets.report_found', asset_id=asset.id) }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="submit" class="btn btn-primary" value="Report Found">
-                        </form>
-                    {% endif %}
-                {% else %}
-                    {% if asset.check_assignee(current_user) %}
-                    <form class="inline-block" action="{{ url_for('assets.report_lost', asset_id=asset.id) }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="submit" class="btn btn-primary" value="Report Lost">
-                    </form>
-                    {% endif %}
-                    {% if current_user.has_admin %}
-                    <form class="inline-block" action="{{ url_for('assets.reclaim', asset_id=asset.id) }}" method="post">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="submit" class="btn btn-primary" value="Reclaim">
-                    </form>
-                    {% endif %}
-                {% endif %}
-            {% elif current_user.has_admin %}
-                <a class="btn btn-primary" href="{{ url_for('assets.assign', asset_id=asset.id) }}">Assign</a>
-            {% endif %}
-            {% if current_user.has_admin %}
-                <a class="btn btn-primary" href="{{ url_for('assets.edit', asset_id=asset.id) }}">Edit</a>
-            {% endif %}
+            <div class="col-md-4">Added by:</div>
+            <div class="col-md-8"><strong>[[asset.added_by]]</strong></div>
+        </div>
+        <div class="col-md-12" ng-if="asset.is_assigned">
+            <hr>
+        </div>
+        <div class="col-md-12" ng-if="asset.is_assigned && (asset.is_mine || {{ has_admin() }})">
+            <div class="col-md-4">Return date:</div>
+            <div class="col-md-8">
+                <strong>[[asset.return_date_]]</strong>
+                <span style="color:red;" ng-if="asset.return_date_past">(Item should have been returned already)</span>
+                <span style="color:orange;" ng-if="asset.return_date_near">(Item return date is close)</span>
+            </div>
+        </div>
+        <div class="col-md-12" ng-if="asset.is_assigned && {{ has_admin() }}">
+            <div class="col-md-4">Assigned to:</div>
+            <div class="col-md-8"><strong>[[asset.assignee]]</strong></div>
+        </div>
+        <div class="col-md-12" ng-if="asset.lost">
+            <div class="col-md-4">Lost:</div>
+            <div class="col-md-8">
+                <big style="color:red;">
+                    <strong>LOST</strong>
+                </big>
+            </div>
+        </div>
+        <div class="col-md-12">
+            {% set assets_url = url_for('assets.index') %}
+            <form ng-if="asset.is_assigned && asset.lost && ({{ has_admin() }} || asset.is_mine)" class="inline-block" action="[['{{assets_url}}' + asset.id + '/report/found']]" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="submit" class="btn btn-primary" value="Report Found">
+            </form>
+            <form ng-if="asset.is_assigned && !asset.lost && asset.is_mine" class="inline-block" action="[['{{assets_url}}' + asset.id + '/report/lost']]" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="submit" class="btn btn-primary" value="Report Lost">
+            </form>
+            <form ng-if="asset.is_assigned && {{ has_admin() }}" class="inline-block" action="[['{{assets_url}}' + asset.id + '/reclaim']]" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="submit" class="btn btn-primary" value="Reclaim">
+            </form>
+            <a ng-if="!asset.is_assigned && {{ has_admin() }}" class="btn btn-primary" href="[['{{assets_url}}' + asset.id + '/assign']]">Assign</a>
+            <a ng-if="{{ has_admin() }}" class="btn btn-primary" href="[['{{assets_url}}' + asset.id + '/edit']]">Edit</a>
         </div>
     </div>
 </div>
-{% else %}
-<p><big><em>No assets</em></big></p>
-{% endfor %}
+<div ng-hide="assets.length || loading || error"><p><h3><em>Empty</em></h3></p></div>
+<div ng-show="loading"><p><h3><em>Loading...</em></h3></p></div>
+<div ng-show="error">
+    <p>
+        <h3 style="color: orange;"><em>An error occurred while retrieving assets</em></h3>
+        <button class="btn btn-primary" ng-click="loadAssets()">Retry</button>
+    </p>
+</div>
+</div>
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

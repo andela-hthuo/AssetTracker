@@ -1,4 +1,10 @@
 {% extends "bootstrap/base.html" %}
+{% import "bootstrap/utils.html" as util %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% block head %}
+  {{super()}}
+  {{fixes.ie8()}}
+{% endblock %}
 {% block title %}Asset Tracker{% endblock %}
 {% block styles %}
 {{ super() }}
@@ -30,22 +36,22 @@
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('assets.index') }}">All</a></li>
-                        <li><a href="{{ url_for('assets.index', filter_by='assigned') }}">Assigned</a></li>
-                        <li><a href="{{ url_for('assets.index', filter_by='unassigned') }}">Unassigned</a></li>
-                        <li><a href="{{ url_for('assets.index', filter_by='lost') }}">Lost</a></li>
+                        <li><a href="{{ url_for('assets.admin') }}">All</a></li>
+                        <li><a href="{{ url_for('assets.admin', filter_by='assigned') }}">Assigned</a></li>
+                        <li><a href="{{ url_for('assets.admin', filter_by='available') }}">Available</a></li>
+                        <li><a href="{{ url_for('assets.admin', filter_by='lost') }}">Lost</a></li>
                     </ul>
                 </li>
-                {% else %}
-                <li><a href="{{ url_for('assets.index') }}">Assigned Assets</a></li>
-                {% endif %}
                 <li><a href="{{ url_for('account.users') }}">Users</a></li>
+                {% else %}
+                <li><a href="{{ url_for('assets.mine') }}">Assets assigned to you</a></li>
+                {% endif %}
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
                 {% if current_user.has_admin %}
-                <li><a href="{{ url_for('auth.invite_user') }}">Invite admin</a></li>
+                <li><a href="{{ url_for('auth.invite_user') }}">Invite user</a></li>
                 {% endif %}
                 <li class="dropdown">
                     <a href="#" data-target="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -76,17 +82,7 @@
                 {{ heading }}
             </h3>
             {% endif %}
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-            {% else %}
-            {% for message in get_flashed_messages() %}
-            <div class="alert alert-info">{{ message }}</div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
+            {{util.flashed_messages(dismissible=True, container=False)}}
             {% block inner_content %}{% endblock %}
         </div>
     </div>
